@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class IndexController {
 
     @RequestMapping("/")
-    public String problem() {
-        return "problem";
+    public String index() {
+        // 根路径重定向到登录页面
+        return "redirect:/login";
     }
 }
