@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>发布新作业 - 作业练习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        /* Toast通知样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 3s;
+            max-width: 350px;
+        }
+        
+        .toast.success {
+            background-color: #4CAF50;
+        }
+        
+        .toast.error {
+            background-color: #f44336;
+        }
+        
+        .toast.warning {
+            background-color: #ff9800;
+        }
+        
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info span {
+            margin-right: 20px;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2px;
+        }
+        
+        .section-title h2 {
+            font-size: 20px;
+            color: #333;
+            font-weight: normal;
+        }
+        
+        .content-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            font-family: inherit;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-group select {
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            cursor: pointer;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        
+        .radio-group input[type="radio"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .question-checkbox {
+            width: auto;
+            margin-right: 10px;
+        }
+        
+        .question-item-list {
+            padding: 10px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .question-item-list.selected {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        .questions-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .questions-section h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+        
+        .question-item {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .question-number {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .remove-question {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .remove-question:hover {
+            background-color: #d32f2f;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .cancel-btn {
+            background-color: #f1f1f1;
+            color: #666;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .add-question-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        
+        .add-question-btn:hover {
+            background-color: #1976D2;
+        }
+        
+        .operator-select {
+            width: 120px;
+        }
+        
+        .question-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .question-row .form-group {
+            flex: 1;
+        }
+        
+        .answer-input {
+            width: 200px !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="header">
+        <h1>作业练习系统</h1>
+        <nav class="nav">
+            <a href="/index">首页</a>
+            <a href="/student/list">学生管理</a>
+            <a href="/assignment/list">作业管理</a>
+            <a href="#">课程管理</a>
+            <a href="#">成绩管理</a>
+        </nav>
+        <div class="user-info">
+            <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+            <a href="/logout" class="logout-btn">退出登录</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="section-title">
+            <h2>发布新作业</h2>
+        </div>
+        
+        <div class="content-box">
+            <form id="assignmentForm" onsubmit="return submitForm()">
+                <!-- 作业基本信息 -->
+                <div class="form-group">
+                    <label for="title">作业标题 *</label>
+                    <input type="text" id="title" name="title" required placeholder="请输入作业标题">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">作业描述 *</label>
+                    <textarea id="description" name="description" required placeholder="请输入作业描述"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="subject">科目 *</label>
+                        <input type="text" id="subject" name="subject" required placeholder="请输入科目">
+                    </div>
+                    <div class="form-group">
+                        <label for="chapter">章节 *</label>
+                        <input type="text" id="chapter" name="chapter" required placeholder="请输入章节">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="difficulty">难度 *</label>
+                        <select id="difficulty" name="difficulty" required>
+                            <option value="">请选择难度</option>
+                            <option value="easy">简单</option>
+                            <option value="medium">中等</option>
+                            <option value="hard">困难</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">截止日期 *</label>
+                        <input type="date" id="deadline" name="deadline" required>
+                    </div>
+                </div>
+                
+                <!-- 题目列表 -->
+                <div class="questions-section">
+                    <h3>题目设置</h3>
+                    
+                    <!-- 试题来源选择 -->
+                    <div class="form-group">
+                        <label>试题来源 *</label>
+                        <div class="radio-group">
+                            <label><input type="radio" name="questionSource" value="manual" checked onchange="switchQuestionSource()"> 手动添加</label>
+                            <label><input type="radio" name="questionSource" value="select" onchange="switchQuestionSource()"> 从未分配试题选择</label>
+                            <label><input type="radio" name="questionSource" value="random" onchange="switchQuestionSource()"> 随机组卷</label>
+                        </div>
+                    </div>
+                    
+                    <!-- 手动添加区域 -->
+                    <div id="manualSection">
+                        <button type="button" class="add-question-btn" onclick="addQuestion()">添加题目</button>
+                    </div>
+                    
+                    <!-- 从未分配试题选择区域 -->
+                    <div id="selectSection" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>筛选条件</label>
+                                <select id="operatorFilter" class="operator-select">
+                                    <option value="all">全部类型</option>
+                                    <option value="+">加法</option>
+                                    <option value="-">减法</option>
+                                    <option value="mixed">混合运算</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="add-question-btn" onclick="loadUnassignedQuestions()">加载未分配试题</button>
+                            </div>
+                        </div>
+                        <div id="unassignedQuestionsList" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #eee; padding: 10px;">
+                            <p>请点击上方按钮加载未分配试题</p>
+                        </div>
+                        <button type="button" class="add-question-btn" onclick="addSelectedQuestions()">添加选中的试题</button>
+                    </div>
+                    
+                    <!-- 随机组卷区域 -->
+                    <div id="randomSection" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>组卷数量 *</label>
+                                <input type="number" id="randomCount" min="1" max="100" value="10" required>
+                            </div>
+                            <div class="form-group">
+                                <label>运算符类型</label>
+                                <select id="randomOperator">
+                                    <option value="all">全部类型</option>
+                                    <option value="+">加法</option>
+                                    <option value="-">减法</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" class="add-question-btn" onclick="randomGenerateQuestions()">随机组卷</button>
+                    </div>
+                    
+                    <div id="questionsContainer">
+                        <!-- 初始题目 -->
+                        <div class="question-item" data-question-index="0">
+                            <div class="question-header">
+                                <span class="question-number">题目 1</span>
+                                <button type="button" class="remove-question" onclick="removeQuestion(this)">删除</button>
+                            </div>
+                            <div class="question-row">
+                                <div class="form-group">
+                                    <label>题目内容 *</label>
+                                    <input type="text" name="questions[0].question" required placeholder="例如：5 + 3 = ?">
+                                </div>
+                                <div class="form-group">
+                                    <label>运算符</label>
+                                    <select name="questions[0].operator" class="operator-select">
+                                        <option value="+">加法</option>
+                                        <option value="-">减法</option>
+                                        <option value="mixed">混合运算</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>正确答案 *</label>
+                                    <input type="number" name="questions[0].answer" class="answer-input" required placeholder="请输入答案">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 表单操作按钮 -->
+                <div class="form-actions">
+                    <a href="/assignment/list" class="cancel-btn">取消</a>
+                    <button type="submit" class="submit-btn">发布作业</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script th:inline="javascript">
+        // 初始化截止日期为今天之后
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            const formattedDate = tomorrow.toISOString().split('T')[0];
+            document.getElementById('deadline').min = formattedDate;
+            document.getElementById('deadline').value = formattedDate;
+        });
+        
+        let questionCount = 1;
+        
+        // 切换试题来源
+        function switchQuestionSource() {
+            const source = document.querySelector('input[name="questionSource"]:checked').value;
+            
+            // 隐藏所有区域
+            document.getElementById('manualSection').style.display = 'none';
+            document.getElementById('selectSection').style.display = 'none';
+            document.getElementById('randomSection').style.display = 'none';
+            
+            // 显示选中的区域
+            if (source === 'manual') {
+                document.getElementById('manualSection').style.display = 'block';
+            } else if (source === 'select') {
+                document.getElementById('selectSection').style.display = 'block';
+            } else if (source === 'random') {
+                document.getElementById('randomSection').style.display = 'block';
+            }
+        }
+        
+        // 加载未分配试题
+        function loadUnassignedQuestions() {
+            const operator = document.getElementById('operatorFilter').value;
+            let url = '/assignment/getUnassignedQuestions';
+            
+            if (operator !== 'all') {
+                url = '/assignment/getUnassignedQuestionsByOperator?operator=' + encodeURIComponent(operator);
+            }
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const questions = data.data;
+                        const questionsList = document.getElementById('unassignedQuestionsList');
+                        
+                        if (questions.length === 0) {
+                            questionsList.innerHTML = '<p>没有找到未分配的试题</p>';
+                            return;
+                        }
+                        
+                        questionsList.innerHTML = '';
+                        questions.forEach((question, index) => {
+                            const questionItem = document.createElement('div');
+                            questionItem.className = 'question-item-list';
+                            questionItem.innerHTML = `
+                                <input type="checkbox" class="question-checkbox" data-id="${question.id}">
+                                <span><strong>${index + 1}.</strong> ${question.question}</span>
+                                <span>答案: ${question.answer}</span>
+                                <span>类型: ${getOperatorText(question.operator)}</span>
+                            `;
+                            
+                            // 添加点击事件切换选中状态
+                            questionItem.addEventListener('click', function(e) {
+                                if (!e.target.classList.contains('question-checkbox')) {
+                                    const checkbox = this.querySelector('.question-checkbox');
+                                    checkbox.checked = !checkbox.checked;
+                                }
+                                updateSelectedClass(this);
+                            });
+                            
+                            // 监听复选框变化
+                            const checkbox = questionItem.querySelector('.question-checkbox');
+                            checkbox.addEventListener('change', function() {
+                                updateSelectedClass(questionItem);
+                            });
+                            
+                            questionsList.appendChild(questionItem);
+                        });
+                    } else {
+                        alert('加载未分配试题失败：' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('加载试题失败:', error);
+                    alert('加载试题失败，请检查网络连接后重试');
+                });
+        }
+        
+        // 更新选中样式
+        function updateSelectedClass(element) {
+            const checkbox = element.querySelector('.question-checkbox');
+            if (checkbox.checked) {
+                element.classList.add('selected');
+            } else {
+                element.classList.remove('selected');
+            }
+        }
+        
+        // 获取运算符文本
+        function getOperatorText(operator) {
+            const operatorMap = {
+                '+': '加法',
+                '-': '减法',
+                'mixed': '混合运算'
+            };
+            return operatorMap[operator] || operator;
+        }
+        
+        // 添加选中的试题
+        function addSelectedQuestions() {
+            const selectedCheckboxes = document.querySelectorAll('.question-checkbox:checked');
+            
+            if (selectedCheckboxes.length === 0) {
+                showToast('请至少选择一道试题', 'warning');
+                return;
+            }
+            
+            // 清空现有的题目
+            const container = document.getElementById('questionsContainer');
+            container.innerHTML = '';
+            questionCount = 0;
+            
+            // 添加选中的试题
+            selectedCheckboxes.forEach((checkbox, index) => {
+                const questionId = checkbox.getAttribute('data-id');
+                const questionItem = checkbox.closest('.question-item-list');
+                const questionText = questionItem.querySelector('span:nth-child(2)').textContent.replace(/^\d+\.\s+/, '');
+                const answerText = questionItem.querySelector('span:nth-child(3)').textContent.replace('答案: ', '');
+                const operatorText = questionItem.querySelector('span:nth-child(4)').textContent.replace('类型: ', '');
+                
+                const operator = getOperatorValue(operatorText);
+                
+                addQuestionFromData(index, questionText, operator, parseInt(answerText), questionId);
+            });
+            
+            showToast('成功添加 ' + selectedCheckboxes.length + ' 道试题', 'success');
+        }
+        
+        // 获取运算符值
+        function getOperatorValue(operatorText) {
+            const operatorMap = {
+                '加法': '+',
+                '减法': '-',
+                '混合运算': 'mixed'
+            };
+            return operatorMap[operatorText] || '+';
+        }
+        
+        // 随机组卷
+        function randomGenerateQuestions() {
+            const count = parseInt(document.getElementById('randomCount').value);
+            const operator = document.getElementById('randomOperator').value;
+            
+            if (!count || count < 1 || count > 100) {
+                showToast('请输入有效的组卷数量（1-100）', 'warning');
+                return;
+            }
+            
+            fetch('/assignment/randomSelectQuestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    count: count,
+                    operator: operator
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const questions = data.data;
+                    
+                    if (questions.length === 0) {
+                        showToast('没有找到符合条件的未分配试题', 'warning');
+                        return;
+                    }
+                    
+                    // 清空现有的题目
+                    const container = document.getElementById('questionsContainer');
+                    container.innerHTML = '';
+                    questionCount = 0;
+                    
+                    // 添加随机选择的试题
+                    questions.forEach((question, index) => {
+                        addQuestionFromData(index, question.question, question.operator, question.answer, question.id);
+                    });
+                    
+                    showToast(`成功随机生成 ${questions.length} 道试题`, 'success');
+                } else {
+                    showToast('随机组卷失败：' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('随机组卷失败:', error);
+                showToast('随机组卷失败，请检查网络连接后重试', 'error');
+            });
+        }
+        
+        // 从数据添加题目
+        function addQuestionFromData(index, questionText, operator, answer, questionId = null) {
+            const container = document.getElementById('questionsContainer');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question-item';
+            newQuestion.setAttribute('data-question-index', index);
+            
+            // 如果有questionId，保存到元素中
+            if (questionId) {
+                newQuestion.setAttribute('data-question-id', questionId);
+            }
+            
+            newQuestion.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">题目 ${index + 1}</span>
+                    <button type="button" class="remove-question" onclick="removeQuestion(this)">删除</button>
+                </div>
+                <div class="question-row">
+                    <div class="form-group">
+                        <label>题目内容 *</label>
+                        <input type="text" name="questions[${index}].question" value="${escapeHtml(questionText)}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>运算符</label>
+                        <select name="questions[${index}].operator" class="operator-select">
+                            <option value="+" ${operator === '+' ? 'selected' : ''}>加法</option>
+                            <option value="-" ${operator === '-' ? 'selected' : ''}>减法</option>
+                            <option value="mixed" ${operator === 'mixed' ? 'selected' : ''}>混合运算</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>正确答案 *</label>
+                        <input type="number" name="questions[${index}].answer" class="answer-input" value="${answer}" required>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(newQuestion);
+            questionCount++;
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        
+        // 添加题目（手动）
+        function addQuestion() {
+            const container = document.getElementById('questionsContainer');
+            const newQuestion = document.createElement('div');
+            newQuestion.className = 'question-item';
+            newQuestion.setAttribute('data-question-index', questionCount);
+            
+            newQuestion.innerHTML = `
+                <div class="question-header">
+                    <span class="question-number">题目 ${questionCount + 1}</span>
+                    <button type="button" class="remove-question" onclick="removeQuestion(this)">删除</button>
+                </div>
+                <div class="question-row">
+                    <div class="form-group">
+                        <label>题目内容 *</label>
+                        <input type="text" name="questions[${questionCount}].question" required placeholder="例如：5 + 3 = ?">
+                    </div>
+                    <div class="form-group">
+                        <label>运算符</label>
+                        <select name="questions[${questionCount}].operator" class="operator-select">
+                            <option value="+">加法</option>
+                            <option value="-">减法</option>
+                            <option value="mixed">混合运算</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>正确答案 *</label>
+                        <input type="number" name="questions[${questionCount}].answer" class="answer-input" required placeholder="请输入答案">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(newQuestion);
+            questionCount++;
+        }
+        
+        // 删除题目
+        function removeQuestion(button) {
+            const questionsContainer = document.getElementById('questionsContainer');
+            const questionItems = questionsContainer.querySelectorAll('.question-item');
+            
+            // 至少保留一个题目
+            if (questionItems.length <= 1) {
+                showToast('至少需要保留一个题目', 'warning');
+                return;
+            }
+            
+            const questionItem = button.closest('.question-item');
+            questionItem.remove();
+            
+            // 更新题目序号
+            updateQuestionNumbers();
+        }
+        
+        // Toast通知函数
+        function showToast(message, type = 'info') {
+            // 确保toast容器存在
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            // 添加到容器
+            toastContainer.appendChild(toast);
+            
+            // 设置定时器移除toast
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 3500);
+        }
+        
+        // 更新题目序号
+        function updateQuestionNumbers() {
+            const questionItems = document.querySelectorAll('.question-item');
+            questionCount = 0;
+            
+            questionItems.forEach((item, index) => {
+                item.setAttribute('data-question-index', index);
+                item.querySelector('.question-number').textContent = `题目 ${index + 1}`;
+                
+                // 更新input的name属性
+                const questionInput = item.querySelector('input[name^="questions"][type="text"]');
+                const operatorSelect = item.querySelector('select[name^="questions"]');
+                const answerInput = item.querySelector('input[name^="questions"][type="number"]');
+                
+                questionInput.name = `questions[${index}].question`;
+                operatorSelect.name = `questions[${index}].operator`;
+                answerInput.name = `questions[${index}].answer`;
+                
+                questionCount++;
+            });
+        }
+        
+        // 提交表单
+        function submitForm() {
+            // 验证表单
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            const subject = document.getElementById('subject').value.trim();
+            const chapter = document.getElementById('chapter').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            const deadline = document.getElementById('deadline').value;
+            
+            if (!title) {
+                showToast('请输入作业标题', 'warning');
+                return false;
+            }
+            if (!description) {
+                showToast('请输入作业描述', 'warning');
+                return false;
+            }
+            if (!subject) {
+                showToast('请输入科目', 'warning');
+                return false;
+            }
+            if (!chapter) {
+                showToast('请输入章节', 'warning');
+                return false;
+            }
+            if (!difficulty) {
+                showToast('请选择难度', 'warning');
+                return false;
+            }
+            if (!deadline) {
+                showToast('请选择截止日期', 'warning');
+                return false;
+            }
+            
+            // 收集表单数据
+            const formData = {
+                title: title,
+                description: description,
+                subject: subject,
+                chapter: chapter,
+                difficulty: difficulty,
+                deadline: deadline,
+                totalQuestions: questionCount,
+                teacherName: /*[[${teacher.name}]]*/ '', // 从后端获取教师姓名
+                questions: []
+            };
+            
+            // 收集题目数据
+            for (let i = 0; i < questionCount; i++) {
+                const questionItem = document.querySelector(`.question-item[data-question-index="${i}"]`);
+                const questionInput = questionItem.querySelector('input[name="questions[' + i + '].question"]');
+                const operatorSelect = questionItem.querySelector('select[name="questions[' + i + '].operator"]');
+                const answerInput = questionItem.querySelector('input[name="questions[' + i + '].answer"]');
+                const questionId = questionItem.getAttribute('data-question-id');
+                
+                const questionData = {
+                    question: questionInput.value.trim(),
+                    operator: operatorSelect.value,
+                    answer: parseInt(answerInput.value)
+                };
+                
+                // 如果有原试题ID，也包含在数据中
+                if (questionId) {
+                    questionData.id = parseInt(questionId);
+                }
+                
+                formData.questions.push(questionData);
+            }
+            
+            console.log('提交的作业数据:', formData);
+            
+            // 发送数据到后端
+            fetch('/assignment/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message || '作业发布成功！', 'success');
+                    // 延迟跳转，让用户能看到成功提示
+                    setTimeout(() => {
+                        window.location.href = data.url || '/assignment/list';
+                    }, 1000);
+                } else {
+                    showToast(data.message || '作业发布失败，请重试', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('提交作业时发生错误:', error);
+                showToast('作业发布失败，请检查网络连接后重试', 'error');
+            });
+            
+            return false; // 阻止表单默认提交
+        }
+    </script>
+</body>
+</html>

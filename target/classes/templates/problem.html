@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算术练习工具</title>
+    <style>
+        body {
+            font-family: "SimSun", "宋体", serif;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f9f9f9;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .section {
+            flex: 1;
+            min-width: 400px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        h1, h2 {
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .problems-container {
+            margin: 20px 0;
+            letter-spacing: 2px;
+            white-space: pre-wrap;
+            font-size: 18px;
+            min-height: 400px;
+        }
+        .problem-row {
+            margin-bottom: 15px;
+        }
+        .problem {
+            display: inline-block;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-size: 16px;
+        }
+        input[type="number"] {
+            width: 200px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .operation-buttons {
+            margin: 15px 0;
+        }
+        .result {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            font-size: 18px;
+            min-height: 24px;
+        }
+        .loading {
+            color: #666;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .success {
+            color: #28a745;
+        }
+        .file-upload {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            text-align: center;
+            transition: border-color 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #4CAF50;
+        }
+        #fileInput {
+            display: none;
+        }
+        .upload-label {
+            cursor: pointer;
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .verify-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+        }
+        .stats {
+            font-size: 18px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background-color: #e9f7ef;
+            border-radius: 4px;
+        }
+        .details {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .detail-item {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-item.correct {
+            background-color: #e8f5e9;
+        }
+        .detail-item.incorrect {
+            background-color: #ffebee;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 20px;
+        }
+    </style>
+    <!-- 引入Axios库 -->
+    <script src="/js/axios.min.js"></script>
+</head>
+<body>
+<h1>算术练习工具</h1>
+
+<div class="container">
+    <!-- 1. 随机算术题生成器 -->
+    <div class="section">
+        <h2>随机算术题生成</h2>
+        <p class="description">自动生成加减法算术题，点击按钮可重新生成</p>
+
+        <div class="problems-container" id="problemsContainer">
+            <div class="loading">点击下方按钮生成题目...</div>
+        </div>
+
+        <button class="refresh-btn" id="refreshBtn">生成随机题目</button>
+    </div>
+
+    <!-- 2. 自定义计算器 -->
+    <div class="section">
+        <h2>自定义计算</h2>
+        <p class="description">输入两个数字，选择运算类型，系统将计算结果</p>
+
+        <div class="calculator-form">
+            <div class="form-group">
+                <label for="num1">第一个数：</label>
+                <input type="number" id="num1" min="0" required>
+            </div>
+
+            <div class="form-group">
+                <label for="num2">第二个数：</label>
+                <input type="number" id="num2" min="0" required>
+            </div>
+
+            <div class="operation-buttons">
+                <label>运算类型：</label>
+                <button type="button" id="addBtn">加法 (+)</button>
+                <button type="button" id="subtractBtn">减法 (-)</button>
+            </div>
+
+            <div class="form-group">
+                <label>计算结果：</label>
+                <div class="result" id="calculationResult"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. CSV算式验证模块 -->
+    <div class="section" style="flex-basis: 100%;">
+        <h2>CSV算式验证</h2>
+        <p class="description">上传包含算式的CSV文件（格式要求：第一行为"expression"，后续每行一个算式，如"12+34=46"或"56-7=49"），系统将验证答案正确性</p>
+
+        <div class="file-upload">
+            <input type="file" id="fileInput" accept=".csv">
+            <label for="fileInput" class="upload-label">点击选择CSV文件</label>
+            <p id="fileName" style="margin-top: 10px;">未选择文件</p>
+            <button id="verifyBtn" style="margin-top: 10px;">开始验证</button>
+        </div>
+
+        <div class="verify-result" id="verifyResult" style="display: none;">
+            <div class="stats">
+                总题数：<span id="totalCount">0</span> |
+                做对：<span id="correctCount" class="success">0</span> |
+                做错：<span id="incorrectCount" class="error">0</span>
+            </div>
+            <div class="details" id="verifyDetails"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 页面加载完成后初始化所有事件监听
+    window.onload = function() {
+        // 绑定随机题目生成按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', generateProblems);
+
+        // 绑定计算器按钮事件
+        document.getElementById('addBtn').addEventListener('click', () => calculate('+'));
+        document.getElementById('subtractBtn').addEventListener('click', () => calculate('-'));
+
+        // 绑定CSV验证相关事件
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+        document.getElementById('verifyBtn').addEventListener('click', verifyCsv);
+    };
+
+    // 生成随机题目
+    function generateProblems() {
+        const container = document.getElementById('problemsContainer');
+        container.innerHTML = '<div class="loading">加载中...</div>';
+
+        axios.get('http://127.0.0.1:8080/formula')
+            .then(response => {
+                const problems = response.data;
+                if (!problems) {
+                    container.innerHTML = '<div class="error">数据异常，请重试</div>';
+                    return;
+                }
+
+                let html = '';
+                for (let i = 0; i < 13; i++) {  // 10行
+                    let row = '';
+                    for (let j = 0; j < 4; j++) {  // 每行5题
+                        const index = i * 4 + j;
+                        const problem = problems[index];
+                        const padding = 20 - problem.length;  // 计算间距保持对齐
+                        row += `<span class="problem" style="padding-right: ${padding}px;">${problem}</span>`;
+                    }
+                    html += `<div class="problem-row">${row}</div>`;
+                }
+                container.innerHTML = html;
+            })
+            .catch(error => {
+                console.error('随机题目生成失败:', error);
+                container.innerHTML = '<div class="error">加载失败，请重试</div>';
+            });
+    }
+
+    // 自定义计算功能（后端处理）
+    function calculate(operation) {
+        const num1Input = document.getElementById('num1');
+        const num2Input = document.getElementById('num2');
+        const resultDiv = document.getElementById('calculationResult');
+
+        // 获取并验证输入值
+        const num1 = parseFloat(num1Input.value);
+        const num2 = parseFloat(num2Input.value);
+
+        if (isNaN(num1) || isNaN(num2)) {
+            resultDiv.textContent = '请输入有效的数字';
+            resultDiv.className = 'result error';
+            return;
+        }
+
+        // 显示加载状态
+        resultDiv.textContent = '计算中...';
+        resultDiv.className = 'result loading';
+
+        // 发送请求到后端计算
+        axios.get('http://127.0.0.1:8080/calculate', {
+            params: {
+                num1: num1,
+                num2: num2,
+                operation: operation
+            }
+        })
+            .then(response => {
+                const result = response.data;
+                if (result.success) {
+                    resultDiv.textContent = result.expression;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = result.message;
+                    resultDiv.className = 'result error';
+                }
+            })
+            .catch(error => {
+                console.error('计算请求失败:', error);
+                resultDiv.textContent = '计算失败，请重试';
+                resultDiv.className = 'result error';
+            });
+    }
+
+    // 处理文件选择
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('fileName').textContent = `已选择：${file.name}`;
+        } else {
+            document.getElementById('fileName').textContent = '未选择文件';
+        }
+    }
+
+    // 验证CSV文件中的算式
+    function verifyCsv() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+
+        if (!file) {
+            alert('请先选择CSV文件');
+            return;
+        }
+
+        // 验证文件类型
+        if (!file.name.endsWith('.csv')) {
+            alert('请选择CSV格式的文件');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const resultDiv = document.getElementById('verifyResult');
+        const detailsDiv = document.getElementById('verifyDetails');
+
+        // 显示加载状态
+        resultDiv.style.display = 'block';
+        detailsDiv.innerHTML = '<div class="loading">正在验证，请稍候...</div>';
+
+        // 发送文件到后端验证
+        axios.post('http://127.0.0.1:8080/verify', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
+            .then(response => {
+                const data = response.data;
+                if (data.success) {
+                    // 更新统计信息
+                    document.getElementById('totalCount').textContent = data.total;
+                    document.getElementById('correctCount').textContent = data.correct;
+                    document.getElementById('incorrectCount').textContent = data.incorrect;
+
+                    // 生成详细信息HTML
+                    let detailsHtml = '';
+                    data.details.forEach(item => {
+                        const className = item.correct ? 'correct' : 'incorrect';
+                        let message = item.correct ? '答案正确' :
+                            `答案错误（正确答案：${item.expected}，你的答案：${item.userAnswer}）`;
+
+                        // 如果有解析错误，显示错误信息
+                        if (item.message) {
+                            message = item.message;
+                        }
+
+                        detailsHtml += `
+                            <div class="detail-item ${className}">
+                                <strong>${item.expression}</strong> - ${message}
+                            </div>
+                        `;
+                    });
+                    detailsDiv.innerHTML = detailsHtml;
+                } else {
+                    detailsDiv.innerHTML = `<div class="error">${data.message}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('文件验证失败:', error);
+                detailsDiv.innerHTML = '<div class="error">验证失败，请重试</div>';
+            });
+    }
+</script>
+</body>
+</html>

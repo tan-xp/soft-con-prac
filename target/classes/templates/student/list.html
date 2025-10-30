@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学生管理 - 作业练习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info span {
+            margin-right: 20px;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .section-title {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 0;
+        }
+        
+        .section-title h2 {
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .content-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .operation-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            width: 300px;
+        }
+        
+        .search-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .search-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .edit-btn, .delete-btn, .reset-pwd-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background-color: #0b7dda;
+        }
+        
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .reset-pwd-btn {
+            background-color: #ff9800;
+            color: white;
+        }
+        
+        .reset-pwd-btn:hover {
+            background-color: #e68900;
+        }
+        
+        .empty-message {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+            font-size: 16px;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
+        }
+        
+        .pagination a {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            color: #333;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .pagination a:hover {
+            background-color: #f5f5f5;
+            border-color: #bbb;
+        }
+        
+        .pagination .active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+        
+        /* 模态框样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            font-size: 20px;
+            color: #333;
+        }
+        
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .cancel-btn, .confirm-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .cancel-btn {
+            background-color: #ddd;
+            color: #333;
+        }
+        
+        .cancel-btn:hover {
+            background-color: #ccc;
+        }
+        
+        .confirm-btn {
+            background-color: #f44336;
+            color: white;
+        }
+        
+        .confirm-btn:hover {
+            background-color: #d32f2f;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .success-message {
+            background-color: #dff0d8;
+            color: #3c763d;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .error-message {
+            background-color: #f2dede;
+            color: #a94442;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="header">
+        <h1>作业练习系统</h1>
+        <div class="nav">
+            <a href="/index">首页</a>
+            <a href="/student/list">学生管理</a>
+            <a href="/question/list" class="active">试题管理</a>
+            <a href="/assignment/list">作业管理</a>
+            <a href="/score/list">成绩统计</a>
+        </div>
+        <div class="user-info">
+            <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+            <a href="/logout" class="logout-btn">退出登录</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="section-title">
+            <h2>学生管理</h2>
+        </div>
+        
+        <div class="content-box">
+            <!-- 操作栏 -->
+            <div class="operation-bar">
+                <a href="/student/add" class="add-btn">+ 添加学生</a>
+                <div class="search-form">
+                    <input type="text" id="searchInput" class="search-input" placeholder="请输入学号、姓名或用户名搜索...">
+                    <button id="searchBtn" class="search-btn">搜索</button>
+                </div>
+            </div>
+            
+            <!-- 消息提示 -->
+            <div id="successMessage" class="success-message"></div>
+            <div id="errorMessage" class="error-message"></div>
+            
+            <!-- 学生列表表格 -->
+            <table id="studentTable">
+                <thead>
+                    <tr>
+                        <th>学号</th>
+                        <th>姓名</th>
+                        <th>用户名</th>
+                        <th>性别</th>
+                        <th>班级</th>
+                        <th>电话</th>
+                        <th>邮箱</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 学生数据将通过JS动态加载 -->
+                </tbody>
+            </table>
+            
+            <!-- 空数据提示 -->
+            <div id="emptyMessage" class="empty-message" style="display: none;">
+                <p>暂无学生数据</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 删除确认模态框 -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>确认删除</h3>
+            </div>
+            <div class="modal-body">
+                <p>确定要删除该学生信息吗？此操作不可撤销。</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelDelete" class="cancel-btn">取消</button>
+                <button id="confirmDelete" class="confirm-btn">删除</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 重置密码模态框 -->
+    <div id="resetPwdModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>重置密码</h3>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="newPassword">新密码：</label>
+                    <input type="password" id="newPassword" placeholder="请输入新密码">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">确认密码：</label>
+                    <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelReset" class="cancel-btn">取消</button>
+                <button id="confirmReset" class="confirm-btn">重置</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 当前操作的学生ID
+        let currentStudentId = null;
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStudents();
+            
+            // 搜索按钮点击事件
+            document.getElementById('searchBtn').addEventListener('click', function() {
+                searchStudents();
+            });
+            
+            // 回车键搜索
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchStudents();
+                }
+            });
+            
+            // 删除模态框事件
+            document.getElementById('cancelDelete').addEventListener('click', function() {
+                document.getElementById('deleteModal').style.display = 'none';
+            });
+            
+            document.getElementById('confirmDelete').addEventListener('click', function() {
+                deleteStudent();
+            });
+            
+            // 重置密码模态框事件
+            document.getElementById('cancelReset').addEventListener('click', function() {
+                document.getElementById('resetPwdModal').style.display = 'none';
+            });
+            
+            document.getElementById('confirmReset').addEventListener('click', function() {
+                resetPassword();
+            });
+        });
+        
+        // 加载学生列表
+        function loadStudents() {
+            const formData = new FormData();
+            formData.append('keyword', '');
+            
+            fetch('/student/search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderStudentTable(data);
+            })
+            .catch(error => {
+                showMessage('error', '加载学生数据失败：' + error.message);
+            });
+        }
+        
+        // 搜索学生
+        function searchStudents() {
+            const keyword = document.getElementById('searchInput').value;
+            const formData = new FormData();
+            formData.append('keyword', keyword);
+            
+            fetch('/student/search', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                renderStudentTable(data);
+            })
+            .catch(error => {
+                showMessage('error', '搜索失败：' + error.message);
+            });
+        }
+        
+        // 渲染学生表格
+        function renderStudentTable(data) {
+            const tbody = document.getElementById('studentTable').querySelector('tbody');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            // 清空表格内容
+            tbody.innerHTML = '';
+            
+            if (data.success && data.students && data.students.length > 0) {
+                // 隐藏空数据提示
+                emptyMessage.style.display = 'none';
+                
+                // 填充表格数据
+                data.students.forEach(student => {
+                    const row = document.createElement('tr');
+                    
+                    // 格式化日期
+                    const createTime = new Date(student.createTime).toLocaleString('zh-CN');
+                    
+                    row.innerHTML = `
+                        <td>${student.studentId || '-'}</td>
+                        <td>${student.name}</td>
+                        <td>${student.username}</td>
+                        <td>${student.gender === 1 ? '男' : '女'}</td>
+                        <td>${student.classInfo || '-'}</td>
+                        <td>${student.phone || '-'}</td>
+                        <td>${student.email || '-'}</td>
+                        <td>${createTime}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <a href="/student/edit/${student.id}" class="edit-btn">编辑</a>
+                                <button class="delete-btn" onclick="showDeleteModal(${student.id})">删除</button>
+                                <button class="reset-pwd-btn" onclick="showResetPwdModal(${student.id})">重置密码</button>
+                            </div>
+                        </td>
+                    `;
+                    
+                    tbody.appendChild(row);
+                });
+            } else {
+                // 显示空数据提示
+                emptyMessage.style.display = 'block';
+            }
+        }
+        
+        // 显示删除确认模态框
+        function showDeleteModal(id) {
+            currentStudentId = id;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+        
+        // 显示重置密码模态框
+        function showResetPwdModal(id) {
+            currentStudentId = id;
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            document.getElementById('resetPwdModal').style.display = 'flex';
+        }
+        
+        // 删除学生
+        function deleteStudent() {
+            if (!currentStudentId) return;
+            
+            fetch(`/student/delete/${currentStudentId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('deleteModal').style.display = 'none';
+                
+                if (data.success) {
+                    showMessage('success', data.message);
+                    loadStudents(); // 重新加载学生列表
+                } else {
+                    showMessage('error', data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('deleteModal').style.display = 'none';
+                showMessage('error', '删除失败：' + error.message);
+            });
+        }
+        
+        // 重置密码
+        function resetPassword() {
+            if (!currentStudentId) return;
+            
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // 验证密码
+            if (!newPassword || newPassword.length < 6) {
+                showMessage('error', '密码长度不能少于6位');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showMessage('error', '两次输入的密码不一致');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('id', currentStudentId);
+            formData.append('newPassword', newPassword);
+            
+            fetch('/student/resetPassword', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('resetPwdModal').style.display = 'none';
+                
+                if (data.success) {
+                    showMessage('success', data.message);
+                } else {
+                    showMessage('error', data.message);
+                }
+            })
+            .catch(error => {
+                document.getElementById('resetPwdModal').style.display = 'none';
+                showMessage('error', '重置密码失败：' + error.message);
+            });
+        }
+        
+        // 显示消息提示
+        function showMessage(type, message) {
+            const successElement = document.getElementById('successMessage');
+            const errorElement = document.getElementById('errorMessage');
+            
+            // 隐藏所有消息
+            successElement.style.display = 'none';
+            errorElement.style.display = 'none';
+            
+            // 显示对应类型的消息
+            if (type === 'success') {
+                successElement.textContent = message;
+                successElement.style.display = 'block';
+            } else if (type === 'error') {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
+            }
+            
+            // 3秒后自动隐藏消息
+            setTimeout(() => {
+                if (type === 'success') {
+                    successElement.style.display = 'none';
+                } else if (type === 'error') {
+                    errorElement.style.display = 'none';
+                }
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

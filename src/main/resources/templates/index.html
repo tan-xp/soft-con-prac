@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>系统首页 - 作业练习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        
+        /* 导航栏样式 */
+        .header nav {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header nav ul {
+            display: flex;
+            list-style: none;
+            gap: 20px;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .header nav ul li a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+        
+        .header nav ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .user-info span {
+            margin-right: 20px;
+        }
+        
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+        
+        .welcome-section {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .welcome-section h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+            color: #4CAF50;
+        }
+        
+        .welcome-section p {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        .card-content {
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .card-icon {
+            font-size: 48px;
+            color: #4CAF50;
+            margin-bottom: 15px;
+        }
+        
+        .quick-actions {
+            background-color: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+        
+        .quick-actions h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+        
+        .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .action-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="header">
+        <h1>作业练习系统</h1>
+        <nav>
+            <ul>
+                <li><a href="/index">首页</a></li>
+                <li><a href="/student/list">学生管理</a></li>
+                <li><a href="/question/list" class="active">试题管理</a></li>
+                <li><a href="/assignment/list">作业管理</a></li>
+                <li><a href="/score/list">成绩统计</a></li>
+            </ul>
+        </nav>
+        <div class="user-info">
+            <span>欢迎您，[[${teacher.name}]]</span>
+            <a href="/logout" class="logout-btn">退出登录</a>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- 欢迎区域 -->
+        <section class="welcome-section">
+            <h2>欢迎使用作业练习系统</h2>
+            <p>您已成功登录系统，现在可以开始使用各项功能</p>
+        </section>
+        
+        <!-- 数据概览卡片 -->
+        <section class="dashboard-cards">
+            <div class="card">
+                <div class="card-icon">👥</div>
+                <h3>学生管理</h3>
+                <div class="card-content">查看学生信息，管理学生账号</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📚</div>
+                <h3>试题管理</h3>
+                <div class="card-content">生成和管理系统题库，包括添加、删除、修改试题</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📝</div>
+                <h3>作业管理</h3>
+                <div class="card-content">发布作业，批改作业，查看学生提交情况</div>
+            </div>
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h3>成绩统计</h3>
+                <div class="card-content">查询和统计学生成绩，生成成绩报表</div>
+            </div>
+        </section>
+        
+        <!-- 快速操作 -->
+        <section class="quick-actions">
+            <h3>快速操作</h3>
+            <div class="action-buttons">
+                <a href="/student/list" class="action-btn">进入学生管理</a>
+                <a href="/question/list" class="action-btn">进入试题管理</a>
+                <a href="/assignment/list" class="action-btn">进入作业管理</a>
+                <a href="/score/list" class="action-btn">进入成绩统计</a>
+            </div>
+        </section>
+    </div>
+    
+    <footer class="footer">
+        <p>&copy; 作业练习系统 黑大帅</p>
+    </footer>
+</body>
+</html>

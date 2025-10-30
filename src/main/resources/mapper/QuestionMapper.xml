@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.QuestionMapper">
+    
+    <!-- 根据作业ID查询题目列表 -->
+    <select id="getQuestionsByAssignmentId" parameterType="int" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE assignment_id = #{assignmentId}
+        ORDER BY id
+    </select>
+    
+    <!-- 获取所有题目 -->
+    <select id="getAllQuestions" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        ORDER BY id
+    </select>
+    
+    <!-- 分页获取所有题目 -->
+    <select id="getAllQuestionsByPage" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        ORDER BY id
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    
+    <!-- 获取所有题目的总数 -->
+    <select id="getTotalQuestions" resultType="int">
+        SELECT COUNT(*)
+        FROM question
+    </select>
+    
+    <!-- 根据ID获取单个题目 -->
+    <select id="getQuestionById" parameterType="int" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 插入单个题目 -->
+    <insert id="insert" parameterType="com.softcon.entity.Question" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO question (question_text, answer, operator, assignment_id)
+        VALUES (#{question}, #{answer}, #{operator}, #{assignmentId,jdbcType=INTEGER})
+    </insert>
+    
+    <!-- 批量插入题目 -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO question (question_text, answer, operator, assignment_id)
+        VALUES
+        <foreach collection="questions" item="question" separator=",">
+            (#{question.question}, #{question.answer}, #{question.operator}, #{question.assignmentId,jdbcType=INTEGER})
+        </foreach>
+    </insert>
+    
+    <!-- 更新题目 -->
+    <update id="update" parameterType="com.softcon.entity.Question">
+        UPDATE question
+        SET question_text = #{question}, answer = #{answer}, operator = #{operator}, assignment_id = #{assignmentId}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据ID删除题目 -->
+    <delete id="deleteById" parameterType="int">
+        DELETE FROM question WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据作业ID删除题目 -->
+    <delete id="deleteByAssignmentId" parameterType="int">
+        DELETE FROM question WHERE assignment_id = #{assignmentId}
+    </delete>
+    
+    <!-- 重置该作业的所有题目的assignment_id为null（设为未分配状态） -->
+    <update id="resetAssignmentId" parameterType="int">
+        UPDATE question SET assignment_id = NULL WHERE assignment_id = #{assignmentId}
+    </update>
+    
+    <!-- 根据题目内容模糊查询 -->
+    <select id="searchQuestionsByContent" parameterType="string" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE question_text LIKE CONCAT('%', #{content}, '%')
+        ORDER BY id
+    </select>
+    
+    <!-- 分页根据题目内容模糊查询 -->
+    <select id="searchQuestionsByContentPage" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE question_text LIKE CONCAT('%', #{content}, '%')
+        ORDER BY id
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+    
+    <!-- 根据题目内容模糊查询的总数 -->
+    <select id="getSearchTotalQuestions" resultType="int">
+        SELECT COUNT(*)
+        FROM question
+        WHERE question_text LIKE CONCAT('%', #{content}, '%')
+    </select>
+    
+    <!-- 获取未分配的试题 -->
+    <select id="getUnassignedQuestions" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE assignment_id IS NULL
+        ORDER BY id
+    </select>
+    
+    <!-- 根据运算符类型获取未分配的试题 -->
+    <select id="getUnassignedQuestionsByOperator" parameterType="string" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE assignment_id IS NULL AND operator = #{operator}
+        ORDER BY id
+    </select>
+    
+    <!-- 更新单个试题的作业ID -->
+    <update id="updateAssignmentId">
+        UPDATE question 
+        SET assignment_id = #{assignmentId} 
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 批量更新试题的作业ID -->
+    <update id="batchUpdateAssignmentId">
+        UPDATE question 
+        SET assignment_id = #{assignmentId} 
+        WHERE id IN 
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

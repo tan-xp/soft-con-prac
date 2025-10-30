@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.TeacherMapper">
+    
+    <!-- 根据用户名查询教师信息 -->
+    <select id="findByUsername" resultType="com.softcon.pojo.entity.Teacher">
+        SELECT id, username, password, name, phone, email 
+        FROM teacher 
+        WHERE username = #{username}
+    </select>
+    
+    <!-- 根据ID查询教师信息 -->
+    <select id="findById" resultType="com.softcon.pojo.entity.Teacher">
+        SELECT id, username, password, name, phone, email 
+        FROM teacher 
+        WHERE id = #{id}
+    </select>
+</mapper>

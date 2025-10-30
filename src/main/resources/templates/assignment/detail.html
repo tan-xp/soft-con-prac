@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业详情 - 作业练习系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info span {
+            margin-right: 20px;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2px;
+        }
+
+        .section-title h2 {
+            font-size: 20px;
+            color: #333;
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .back-link {
+            color: #4CAF50;
+            text-decoration: none;
+            font-size: 16px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .content-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            font-size: 16px;
+            color: #666;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .tab-button:hover {
+            color: #4CAF50;
+        }
+
+        .tab-button.active {
+            color: #4CAF50;
+            font-weight: 500;
+        }
+
+        .tab-button.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background-color: #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .description-section {
+            margin-top: 20px;
+        }
+
+        .description-section h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .description-content {
+            line-height: 1.6;
+            color: #555;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        .question-list {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: #4CAF50;
+            font-size: 16px;
+        }
+
+        .question-operator {
+            padding: 4px 8px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .question-content {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .question-answer {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stats-card {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .operation-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .auto-grade-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .auto-grade-btn:hover {
+            background-color: #1976D2;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: normal;
+            color: #666;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status-completed {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            color: #ff9800;
+        }
+
+        .status-overdue {
+            color: #f44336;
+        }
+
+        .score-cell {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .view-detail-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .view-detail-btn:hover {
+            background-color: #45a049;
+        }
+
+        .difficulty-tag {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .difficulty-easy {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .difficulty-medium {
+            background-color: #fff8e1;
+            color: #f57f17;
+        }
+
+        .difficulty-hard {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+    </style>
+</head>
+<body>
+    <!-- 数据容器，用于通过HTML data属性传递数据给JavaScript -->
+    <div id="data-container" 
+         th:data-assignment="${@jsonUtil.toJson(assignment) ?: '{}'}"
+         th:data-questions="${@jsonUtil.toJson(questions) ?: '[]'}"
+         th:data-submissions="${@jsonUtil.toJson(submissions) ?: '[]'}" 
+         style="display:none;"></div>
+<!-- 头部导航 -->
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="#">课程管理</a>
+        <a href="#">成绩管理</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title">
+        <h2>
+            <a href="/assignment/list" class="back-link">← 返回作业列表</a>
+            作业详情
+        </h2>
+    </div>
+
+    <div class="content-box">
+        <!-- 作业标题和基本信息 -->
+        <h3 id="assignmentTitle" style="margin-bottom: 20px; color: #333;"></h3>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="info-label">科目</span>
+                <span id="assignmentSubject" class="info-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">章节</span>
+                <span id="assignmentChapter" class="info-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">难度</span>
+                <span id="assignmentDifficulty" class="info-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">题目数量</span>
+                <span id="assignmentTotalQuestions" class="info-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">创建时间</span>
+                <span id="assignmentCreatedAt" class="info-value"></span>
+            </div>
+            <div class="info-item">
+                <span class="info-label">截止日期</span>
+                <span id="assignmentDeadline" class="info-value"></span>
+            </div>
+        </div>
+
+        <div class="description-section">
+            <h3>作业描述</h3>
+            <div id="assignmentDescription" class="description-content"></div>
+        </div>
+
+        <!-- 标签页导航 -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('questions-tab', event)">作业题目</button>
+            <button class="tab-button" onclick="switchTab('submissions-tab', event)">学生提交情况</button>
+        </div>
+
+        <!-- 标签页内容 -->
+        <div id="questions-tab" class="tab-content active">
+            <div id="questionsList" class="question-list">
+                <!-- 题目列表将通过JavaScript动态填充 -->
+            </div>
+        </div>
+
+        <div id="submissions-tab" class="tab-content">
+            <!-- 统计卡片 -->
+            <div class="stats-card">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalStudents">0</div>
+                        <div class="stat-label">总学生数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="submittedCount">0</div>
+                        <div class="stat-label">已提交</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="pendingCount">0</div>
+                        <div class="stat-label">未提交</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="overdueCount">0</div>
+                        <div class="stat-label">已逾期</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="averageScore">0</div>
+                        <div class="stat-label">平均分</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作栏 -->
+            <div class="operation-bar">
+                <h3 style="margin: 0;">学生提交情况</h3>
+                <button id="autoGradeBtn" class="auto-grade-btn" onclick="autoGradeAssignment()">自动批改作业</button>
+            </div>
+
+            <!-- 提交列表表格 -->
+            <table id="submissionsTable">
+                <thead>
+                <tr>
+                    <th>学生姓名</th>
+                    <th>提交时间</th>
+                    <th>得分</th>
+                    <th>状态</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- 提交列表将通过JavaScript动态填充 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 从HTML data属性获取数据，避免直接在JavaScript中使用Thymeleaf表达式
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            // 安全地解析JSON数据
+            const assignmentData = JSON.parse(document.getElementById('data-container').dataset.assignment || '{}');
+            const questionsData = JSON.parse(document.getElementById('data-container').dataset.questions || '[]');
+            const submissionsData = JSON.parse(document.getElementById('data-container').dataset.submissions || '[]');
+            
+            console.log('Assignment Data:', assignmentData);
+            console.log('Questions Data:', questionsData);
+            console.log('Submissions Data:', submissionsData);
+            
+            // 加载作业详情
+            loadAssignmentDetails(assignmentData);
+            
+            // 加载题目列表
+            loadQuestions(questionsData);
+            
+            // 加载提交情况
+            loadSubmissions(submissionsData);
+            
+            // 默认显示第一个标签页（questions-tab）
+            switchTab('questions-tab');
+        } catch (error) {
+            console.error('数据加载失败:', error);
+            alert('页面加载失败，请刷新重试');
+        }
+    });
+</script>
+
+<style>
+        /* Toast通知样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 3s;
+            max-width: 350px;
+        }
+        
+        .toast.success {
+            background-color: #4CAF50;
+        }
+        
+        .toast.error {
+            background-color: #f44336;
+        }
+        
+        .toast.warning {
+            background-color: #ff9800;
+        }
+        
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+    
+    <script>
+    // 加载作业详情
+    function loadAssignmentDetails(assignment) {
+        try {
+            document.getElementById('assignmentTitle').textContent = assignment.title || '未设置标题';
+            document.getElementById('assignmentSubject').textContent = assignment.subject || '未设置';
+            document.getElementById('assignmentChapter').textContent = assignment.chapter || '未设置';
+            
+            // 设置难度标签
+            let difficultyHtml = '';
+            switch(assignment.difficulty) {
+                case 'easy':
+                    difficultyHtml = '<span class="difficulty-tag difficulty-easy">简单</span>';
+                    break;
+                case 'medium':
+                    difficultyHtml = '<span class="difficulty-tag difficulty-medium">中等</span>';
+                    break;
+                case 'hard':
+                    difficultyHtml = '<span class="difficulty-tag difficulty-hard">困难</span>';
+                    break;
+                default:
+                    difficultyHtml = '<span class="difficulty-tag">未设置</span>';
+            }
+            document.getElementById('assignmentDifficulty').innerHTML = difficultyHtml;
+            
+            document.getElementById('assignmentTotalQuestions').textContent = assignment.totalQuestions || 0;
+            document.getElementById('assignmentCreatedAt').textContent = assignment.createdAt || '未知';
+            document.getElementById('assignmentDeadline').textContent = assignment.deadline || '未设置';
+            document.getElementById('assignmentDescription').textContent = assignment.description || '无描述';
+        } catch (error) {
+            console.error('加载作业详情失败:', error);
+        }
+    }
+    
+    // 加载题目列表
+    function loadQuestions(questions) {
+        try {
+            const questionsList = document.getElementById('questionsList');
+            questionsList.innerHTML = '';
+            
+            if (!questions || questions.length === 0) {
+                questionsList.innerHTML = '<p style="text-align:center;padding:20px;">暂无题目数据</p>';
+                return;
+            }
+            
+            questions.forEach((question, index) => {
+                const questionItem = document.createElement('div');
+                questionItem.className = 'question-item';
+                
+                // 运算符标签
+                let operatorHtml = '';
+                switch(question.operator) {
+                    case '+':
+                        operatorHtml = '<span class="question-operator">加法</span>';
+                        break;
+                    case '-':
+                        operatorHtml = '<span class="question-operator">减法</span>';
+                        break;
+                    case 'mixed':
+                        operatorHtml = '<span class="question-operator">混合运算</span>';
+                        break;
+                    default:
+                        operatorHtml = '<span class="question-operator">未知类型</span>';
+                }
+                
+                // 使用简单的字符串拼接代替复杂的模板字符串
+                const questionNumber = index + 1;
+                const questionContent = question.question || '无问题内容';
+                const questionAnswer = question.answer || '未设置';
+                
+                questionItem.innerHTML = '<div class="question-header">' +
+                    '<span class="question-number">问题 ' + questionNumber + '</span>' +
+                    operatorHtml +
+                    '</div>' +
+                    '<div class="question-content">' + questionContent + '</div>' +
+                    '<div class="question-answer">正确答案: ' + questionAnswer + '</div>';
+                
+                questionsList.appendChild(questionItem);
+            });
+        } catch (error) {
+            console.error('加载题目列表失败:', error);
+        }
+    }
+    
+    // 加载提交情况
+    function loadSubmissions(submissions) {
+        try {
+            const submissionsTable = document.getElementById('submissionsTable').querySelector('tbody');
+            submissionsTable.innerHTML = '';
+            
+            if (!submissions || submissions.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = '<td colspan="5" style="text-align:center;padding:20px;">暂无提交数据</td>';
+                submissionsTable.appendChild(emptyRow);
+                return;
+            }
+            
+            // 计算统计数据
+            const totalStudents = submissions.length;
+            const submittedCount = submissions.filter(s => s.status === '已提交').length;
+            const pendingCount = submissions.filter(s => s.status === '未提交').length;
+            const overdueCount = totalStudents - submittedCount - pendingCount;
+            
+            // 计算平均分（仅计算已提交的）
+            let totalScore = 0;
+            let scoredCount = 0;
+            submissions.forEach(submission => {
+                if (submission.score && submission.score > 0) {
+                    totalScore += submission.score;
+                    scoredCount++;
+                }
+            });
+            const averageScore = scoredCount > 0 ? Math.round(totalScore / scoredCount) : 0;
+            
+            // 更新统计数据
+            document.getElementById('totalStudents').textContent = totalStudents;
+            document.getElementById('submittedCount').textContent = submittedCount;
+            document.getElementById('pendingCount').textContent = pendingCount;
+            document.getElementById('overdueCount').textContent = overdueCount;
+            document.getElementById('averageScore').textContent = averageScore;
+            
+            // 渲染提交列表
+            submissions.forEach(submission => {
+                const row = document.createElement('tr');
+                
+                // 状态样式和文本
+                let statusClass = '';
+                let statusText = submission.status || '未知';
+                switch(submission.status) {
+                    case '已提交':
+                        statusClass = 'status-completed';
+                        break;
+                    case '未提交':
+                        statusClass = 'status-pending';
+                        break;
+                    case '已逾期':
+                        statusClass = 'status-overdue';
+                        break;
+                }
+                
+                // 简单的字符串拼接，避免复杂的嵌套条件
+                const studentName = submission.studentName || '未知';
+                const submissionTime = submission.submissionTime || '-';
+                const score = submission.score > 0 ? submission.score : '-';
+                
+                let actionHtml = '-';
+                if (submission.status === '已提交' && submission.id) {
+                    actionHtml = '<a href="#" class="view-detail-btn" onclick="viewStudentSubmission(' + submission.id + ')">查看详情</a>';
+                }
+                
+                row.innerHTML = '<td>' + studentName + '</td>' +
+                    '<td>' + submissionTime + '</td>' +
+                    '<td class="score-cell">' + score + '</td>' +
+                    '<td class="' + statusClass + '">' + statusText + '</td>' +
+                    '<td>' + actionHtml + '</td>';
+                
+                submissionsTable.appendChild(row);
+            });
+        } catch (error) {
+            console.error('加载提交情况失败:', error);
+        }
+    }
+    
+    // 切换标签页
+    function switchTab(tabId, event) {
+        try {
+            // 隐藏所有标签页内容
+            const tabContents = document.querySelectorAll('.tab-content');
+            if (tabContents.length > 0) {
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+            }
+            
+            // 移除所有标签按钮的激活状态
+            const tabButtons = document.querySelectorAll('.tab-button');
+            if (tabButtons.length > 0) {
+                tabButtons.forEach(button => {
+                    button.classList.remove('active');
+                });
+            }
+            
+            // 显示选中的标签页内容，添加null检查
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) {
+                targetTab.classList.add('active');
+            } else {
+                console.warn('未找到ID为' + tabId + '的标签页元素');
+            }
+            
+            // 激活选中的标签按钮，添加null检查
+            if (event && event.target) {
+                event.target.classList.add('active');
+            }
+        } catch (error) {
+            console.error('切换标签页失败:', error);
+        }
+    }
+    
+    // Toast通知函数
+    function showToast(message, type = 'info') {
+        // 确保toast容器存在
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container';
+            document.body.appendChild(toastContainer);
+        }
+        
+        // 创建toast元素
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        
+        // 添加到容器
+        toastContainer.appendChild(toast);
+        
+        // 设置定时器移除toast
+        setTimeout(() => {
+            toastContainer.removeChild(toast);
+        }, 3500);
+    }
+    
+    // 自动批改作业
+    function autoGradeAssignment() {
+        try {
+            if (confirm('确定要进行自动批改吗？')) {
+                // 获取作业ID
+                const assignmentData = JSON.parse(document.getElementById('data-container').dataset.assignment || '{}');
+                const assignmentId = assignmentData.id;
+                if (!assignmentId) {
+                    showToast('无法获取作业ID，操作失败', 'error');
+                    return;
+                }
+                
+                // 显示加载状态
+                const autoGradeBtn = document.getElementById('autoGradeBtn');
+                const originalText = autoGradeBtn.textContent;
+                autoGradeBtn.disabled = true;
+                autoGradeBtn.textContent = '正在批改...';
+                
+                // 使用XMLHttpRequest代替fetch以避免潜在问题
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/assignment/autoGrade/' + assignmentId, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        // 恢复按钮状态
+                        autoGradeBtn.disabled = false;
+                        autoGradeBtn.textContent = originalText;
+                        
+                        try {
+                            const data = JSON.parse(xhr.responseText);
+                            if (xhr.status === 200 && data.success) {
+                                showToast('自动批改成功！', 'success');
+                                // 延迟刷新，让用户能看到成功提示
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 1000);
+                            } else {
+                                showToast('自动批改失败：' + (data.message || '未知错误'), 'error');
+                            }
+                        } catch (e) {
+                            showToast('服务器响应格式错误，请重试', 'error');
+                        }
+                    }
+                };
+                
+                xhr.onerror = function() {
+                    // 恢复按钮状态
+                    autoGradeBtn.disabled = false;
+                    autoGradeBtn.textContent = originalText;
+                    alert('网络请求失败，请重试');
+                };
+                
+                xhr.send();
+            }
+        } catch (error) {
+            console.error('自动批改作业失败:', error);
+            alert('操作失败，请重试');
+        }
+    }
+    
+    // 查看学生提交详情
+    function viewStudentSubmission(submissionId) {
+        try {
+            alert('查看提交ID: ' + submissionId + ' 的详情');
+            // 实际应用中，这里会打开一个模态框或跳转到详情页面
+        } catch (error) {
+            console.error('查看提交详情失败:', error);
+        }
+    }
+    
+    // 在已有初始化代码中添加默认显示第一个标签页的功能
+    // 修改现有的DOMContentLoaded事件监听器，确保只保留一个初始化入口
+    // 注意：此处不需要再次添加DOMContentLoaded，因为前面已经有一个
+    // 默认显示第一个标签页 - 将在现有的DOMContentLoaded中调用switchTab函数
+</script>
+</body>
+</html>

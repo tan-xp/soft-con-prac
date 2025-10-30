@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.StudentMapper">
+    
+    <!-- 查询所有学生信息 -->
+    <select id="findAll" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        ORDER BY id DESC
+    </select>
+    
+    <!-- 根据ID查询学生信息 -->
+    <select id="findById" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 根据用户名查询学生信息 -->
+    <select id="findByUsername" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        WHERE username = #{username}
+    </select>
+    
+    <!-- 新增学生信息 -->
+    <insert id="insert" parameterType="com.softcon.entity.Student" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO student (username, password, name, gender, student_id, 
+                           phone, email, class_info, create_time, update_time)
+        VALUES (#{username}, #{password}, #{name}, #{gender}, #{studentId}, 
+                #{phone}, #{email}, #{classInfo}, NOW(), NOW())
+    </insert>
+    
+    <!-- 更新学生信息 -->
+    <update id="update" parameterType="com.softcon.entity.Student">
+        UPDATE student 
+        SET username = #{username}, 
+            password = #{password}, 
+            name = #{name}, 
+            gender = #{gender}, 
+            student_id = #{studentId}, 
+            phone = #{phone}, 
+            email = #{email}, 
+            class_info = #{classInfo}, 
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除学生信息 -->
+    <delete id="delete">
+        DELETE FROM student WHERE id = #{id}
+    </delete>
+    
+    <!-- 根据条件查询学生信息 -->
+    <select id="search" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        WHERE name LIKE CONCAT('%', #{keyword}, '%') 
+           OR username LIKE CONCAT('%', #{keyword}, '%') 
+           OR student_id LIKE CONCAT('%', #{keyword}, '%') 
+           OR class_info LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+    </select>
+    
+    <!-- 根据学号和密码查询学生 -->
+    <select id="findByStudentIdAndPassword" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        WHERE student_id = #{studentId} AND password = #{password}
+    </select>
+    
+    <!-- 根据学号查询学生 -->
+    <select id="findByStudentId" resultType="com.softcon.entity.Student">
+        SELECT id, username, password, name, gender, student_id as studentId, 
+               phone, email, class_info as classInfo, create_time as createTime, 
+               update_time as updateTime 
+        FROM student 
+        WHERE student_id = #{studentId}
+    </select>
+</mapper>

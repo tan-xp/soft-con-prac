@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.AssignmentMapper">
+    
+    <!-- 查询所有作业 -->
+    <select id="getAllAssignments" resultType="com.softcon.entity.Assignment">
+        SELECT id, title, description, total_questions as totalQuestions, 
+               deadline, is_completed as isCompleted, created_at as createdAt, 
+               difficulty, teacher_name as teacherName, subject, chapter
+        FROM assignment
+        ORDER BY created_at DESC
+    </select>
+    
+    <!-- 根据ID查询作业 -->
+    <select id="getAssignmentById" parameterType="int" resultType="com.softcon.entity.Assignment">
+        SELECT id, title, description, total_questions as totalQuestions, 
+               deadline, is_completed as isCompleted, created_at as createdAt, 
+               difficulty, teacher_name as teacherName, subject, chapter
+        FROM assignment
+        WHERE id = #{id}
+    </select>
+    
+    <!-- 新增作业 -->
+    <insert id="insert" parameterType="com.softcon.entity.Assignment" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO assignment (title, description, total_questions, deadline, 
+                              is_completed, created_at, difficulty, teacher_name, 
+                              subject, chapter)
+        VALUES (#{title}, #{description}, #{totalQuestions}, #{deadline}, 
+               #{isCompleted}, #{createdAt}, #{difficulty}, #{teacherName}, 
+               #{subject}, #{chapter})
+    </insert>
+    
+    <!-- 更新作业 -->
+    <update id="update" parameterType="com.softcon.entity.Assignment">
+        UPDATE assignment
+        SET title = #{title},
+            description = #{description},
+            total_questions = #{totalQuestions},
+            deadline = #{deadline},
+            is_completed = #{isCompleted},
+            difficulty = #{difficulty},
+            teacher_name = #{teacherName},
+            subject = #{subject},
+            chapter = #{chapter}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 删除作业 -->
+    <delete id="delete" parameterType="int">
+        DELETE FROM assignment WHERE id = #{id}
+    </delete>
+</mapper>

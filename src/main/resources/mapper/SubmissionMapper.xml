@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.SubmissionMapper">
+    
+    <!-- 根据作业ID查询提交记录 -->
+    <select id="getSubmissionsByAssignmentId" parameterType="int" resultType="com.softcon.entity.Submission">
+        SELECT id, 
+               assignment_id as assignmentId, 
+               student_id as studentId, 
+               student_name as studentName, 
+               submission_time as submissionTime,
+               score, 
+               -- 将数据库状态值转换为中文状态值
+               CASE WHEN status = 'completed' THEN '已提交'
+                    WHEN status = 'pending' THEN '未提交'
+                    WHEN status = 'overdue' THEN '已逾期'
+                    ELSE status END as status,
+               answers
+        FROM submission
+        WHERE assignment_id = #{assignmentId}
+        ORDER BY submission_time DESC
+    </select>
+    
+    <!-- 根据学生ID和作业ID查询提交记录 -->
+    <select id="getSubmissionByStudentAndAssignment" resultType="com.softcon.entity.Submission">
+        SELECT id, 
+               assignment_id as assignmentId, 
+               student_id as studentId, 
+               student_name as studentName, 
+               submission_time as submissionTime,
+               score, 
+               -- 将数据库状态值转换为中文状态值
+               CASE WHEN status = 'completed' THEN '已提交'
+                    WHEN status = 'pending' THEN '未提交'
+                    WHEN status = 'overdue' THEN '已逾期'
+                    ELSE status END as status,
+               answers
+        FROM submission
+        WHERE student_id = #{studentId} AND assignment_id = #{assignmentId}
+    </select>
+    
+    <!-- 插入提交记录 -->
+    <insert id="insert" parameterType="com.softcon.entity.Submission">
+        INSERT INTO submission (assignment_id, student_id, student_name, 
+                              submission_time, score, status, answers)
+        VALUES (#{assignmentId}, #{studentId}, #{studentName}, 
+               #{submissionTime}, #{score}, 
+               <!-- 将应用程序状态值转换为数据库状态值 -->
+               CASE WHEN #{status} = '已提交' THEN 'completed' 
+                    WHEN #{status} = '未提交' THEN 'pending'
+                    WHEN #{status} = '已逾期' THEN 'overdue'
+                    ELSE #{status} END,
+               #{answers})
+    </insert>
+    
+    <!-- 更新提交记录 -->
+    <update id="update" parameterType="com.softcon.entity.Submission">
+        UPDATE submission
+        SET submission_time = #{submissionTime},
+            score = #{score},
+            status = CASE WHEN #{status} = '已提交' THEN 'completed' 
+                          WHEN #{status} = '未提交' THEN 'pending'
+                          WHEN #{status} = '已逾期' THEN 'overdue'
+                          ELSE #{status} END,
+            answers = #{answers}
+        WHERE id = #{id}
+    </update>
+    
+    <!-- 根据作业ID删除所有相关提交记录 -->
+    <delete id="deleteByAssignmentId" parameterType="int">
+        DELETE FROM submission WHERE assignment_id = #{assignmentId}
+    </delete>
+    
+    <!-- 根据学生ID查询所有提交记录 -->
+    <select id="getSubmissionsByStudentId" parameterType="int" resultType="com.softcon.entity.Submission">
+        SELECT id, 
+               assignment_id as assignmentId, 
+               student_id as studentId, 
+               student_name as studentName, 
+               submission_time as submissionTime,
+               score, 
+               -- 将数据库状态值转换为中文状态值
+               CASE WHEN status = 'completed' THEN '已提交'
+                    WHEN status = 'pending' THEN '未提交'
+                    WHEN status = 'overdue' THEN '已逾期'
+                    ELSE status END as status,
+               answers
+        FROM submission
+        WHERE student_id = #{studentId}
+        ORDER BY submission_time DESC
+    </select>
+</mapper>
