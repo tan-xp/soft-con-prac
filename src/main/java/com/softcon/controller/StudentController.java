@@ -7,6 +7,7 @@ import com.softcon.entity.Question;
 import com.softcon.entity.Student;
 import com.softcon.entity.Submission;
 import com.softcon.mapper.QuestionMapper;
+import com.softcon.mapper.SubmissionMapper;
 import com.softcon.service.AssignmentService;
 import com.softcon.service.StudentService;
 import com.softcon.service.SubmissionService;
@@ -41,6 +42,9 @@ public class StudentController {
 
     @Autowired
     private AssignmentService assignmentService;
+
+    @Autowired
+    private SubmissionMapper submissionMapper;
 
     /**
      * 获取学生作业列表接口
@@ -363,6 +367,42 @@ public class StudentController {
             result.put("message", "密码重置失败：" + e.getMessage());
         }
 
+        return result;
+    }
+
+    /**
+     * 获取学生提交详情
+     */
+    @RequestMapping(value = "/submission/detail/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getSubmissionDetail(@PathVariable("id") Integer submissionId) {
+        Map<String, Object> result = new HashMap<>();
+        
+        try {
+            // 获取提交记录
+            Submission submission = submissionMapper.getSubmissionById(submissionId);
+            if (submission == null) {
+                result.put("success", false);
+                result.put("message", "提交记录不存在");
+                return result;
+            }
+            
+            // 获取该作业的所有题目
+            List<Question> questions = questionMapper.getQuestionsByAssignmentId(submission.getAssignmentId());
+            
+            // 构建详情数据
+            Map<String, Object> detail = new HashMap<>();
+            detail.put("submission", submission);
+            detail.put("questions", questions);
+            
+            result.put("success", true);
+            result.put("data", detail);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取提交详情失败：" + e.getMessage());
+            e.printStackTrace();
+        }
+        
         return result;
     }
 

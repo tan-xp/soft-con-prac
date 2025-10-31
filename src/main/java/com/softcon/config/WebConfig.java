@@ -21,7 +21,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .addPathPatterns("/student/**")
                 // 排除登录接口
-                .excludePathPatterns("/student/login","/student/list","/student/add","/student/edit/**","/student/update","/student/delete/**","/student/search","/student/resetPassword")
+                .excludePathPatterns("/student/login","/student/submission/detail/**","/student/list","/student/add","/student/edit/**","/student/update","/student/delete/**","/student/search","/student/resetPassword")
                 // 排除静态资源
                 .excludePathPatterns("/static/**", "/templates/**");
     }

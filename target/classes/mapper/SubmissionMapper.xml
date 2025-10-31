@@ -89,4 +89,22 @@
         WHERE student_id = #{studentId}
         ORDER BY submission_time DESC
     </select>
+    
+    <!-- 根据ID查询提交记录 -->
+    <select id="getSubmissionById" parameterType="int" resultType="com.softcon.entity.Submission">
+        SELECT id, 
+               assignment_id as assignmentId, 
+               student_id as studentId, 
+               student_name as studentName, 
+               submission_time as submissionTime,
+               score, 
+               -- 将数据库状态值转换为中文状态值
+               CASE WHEN status = 'completed' THEN '已提交'
+                    WHEN status = 'pending' THEN '未提交'
+                    WHEN status = 'overdue' THEN '已逾期'
+                    ELSE status END as status,
+               answers
+        FROM submission
+        WHERE id = #{id}
+    </select>
 </mapper>

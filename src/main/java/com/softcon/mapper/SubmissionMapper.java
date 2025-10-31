@@ -41,4 +41,9 @@ public interface SubmissionMapper {
      * 根据学生ID获取所有提交记录
      */
     List<Submission> getSubmissionsByStudentId(@Param("studentId") Integer studentId);
+    
+    /**
+     * 根据ID获取提交记录
+     */
+    Submission getSubmissionById(@Param("id") Integer id);
 }
