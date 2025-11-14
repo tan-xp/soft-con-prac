@@ -1,7 +1,7 @@
 package com.softcon.controller;
 
-import com.softcon.pojo.dto.UserLoginDTO;
-import com.softcon.pojo.entity.Teacher;
+import com.softcon.pojo.UserLoginDTO;
+import com.softcon.entity.Teacher;
 import com.softcon.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

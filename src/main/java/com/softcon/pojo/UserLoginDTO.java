@@ -1,4 +1,4 @@
-package com.softcon.pojo.dto;
+package com.softcon.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
