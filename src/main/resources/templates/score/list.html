@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>成绩统计 - 作业练习系统</title>
+    <!-- 引入ECharts.js库 -->
+    <script src="/js/echarts.min.js"></script>
     <style>
         /* 基础重置样式 - 与系统统一 */
         * {
@@ -565,91 +567,7 @@
             });
         });
         
-        // 简单的图表绘制函数（替代Chart.js）
-        function createSimpleChart(canvasId, labels, scores) {
-            const canvas = document.getElementById(canvasId);
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            const width = canvas.width;
-            const height = canvas.height;
-            
-            // 清空画布
-            ctx.clearRect(0, 0, width, height);
-            
-            // 设置边距
-            const margin = { top: 20, right: 30, bottom: 50, left: 40 };
-            const chartWidth = width - margin.left - margin.right;
-            const chartHeight = height - margin.top - margin.bottom;
-            
-            // 计算最大值和最小值
-            const maxScore = 100;
-            const minScore = 0;
-            
-            // 计算每个条形的宽度
-            const barWidth = chartWidth / (labels.length * 2);
-            
-            // 绘制坐标轴
-            ctx.beginPath();
-            ctx.moveTo(margin.left, margin.top);
-            ctx.lineTo(margin.left, height - margin.bottom);
-            ctx.lineTo(width - margin.right, height - margin.bottom);
-            ctx.strokeStyle = '#ccc';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-            
-            // 绘制条形图
-            labels.forEach((label, index) => {
-                const x = margin.left + (index * 2 + 0.5) * barWidth;
-                const barHeight = (scores[index] / maxScore) * chartHeight;
-                const y = height - margin.bottom - barHeight;
-                
-                // 设置条形颜色
-                const colors = ['rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)'];
-                ctx.fillStyle = colors[index % colors.length];
-                
-                // 绘制条形
-                ctx.fillRect(x, y, barWidth, barHeight);
-                
-                // 绘制标签
-                ctx.fillStyle = '#333';
-                ctx.font = '12px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(label, x + barWidth / 2, height - margin.bottom + 15);
-                
-                // 绘制数值
-                ctx.fillText(scores[index], x + barWidth / 2, y - 5);
-            });
-            
-            // 绘制Y轴标签
-            ctx.fillStyle = '#333';
-            ctx.font = '12px Arial';
-            ctx.textAlign = 'right';
-            for (let i = 0; i <= 5; i++) {
-                const y = height - margin.bottom - (i * chartHeight / 5);
-                ctx.beginPath();
-                ctx.moveTo(margin.left - 5, y);
-                ctx.lineTo(margin.left, y);
-                ctx.stroke();
-                ctx.fillText((i * 20).toString(), margin.left - 10, y + 4);
-            }
-            
-            // 绘制Y轴标题
-            ctx.save();
-            ctx.translate(margin.left / 2, height / 2);
-            ctx.rotate(-Math.PI / 2);
-            ctx.textAlign = 'center';
-            ctx.fillText('分数', 0, 0);
-            ctx.restore();
-        }
-        
-        // 覆盖原createChart函数
-        window.createChart = function(canvas, config) {
-            if (canvas && config.data) {
-                const canvasId = canvas.id || 'chart-canvas';
-                createSimpleChart(canvasId, config.data.labels, config.data.datasets[0].data);
-            }
-        };
+
     </script>
     <script>
         // 模拟数据，用于演示
@@ -911,24 +829,31 @@
             studentScoresListElement.innerHTML = html;
         }
 
-        // 创建学生成绩统计图
+        // 创建学生成绩统计图 - 使用ECharts.js
         function createStudentScoreChart(scores) {
             // 准备图表数据
             const labels = [];
             const scoreData = [];
+            const itemColors = [];
             
             scores.forEach(score => {
                 if (score.submitted) {
                     labels.push(score.assignmentName.substring(0, 10) + (score.assignmentName.length > 10 ? '...' : ''));
                     scoreData.push(score.score);
+                    
+                    // 根据分数设置颜色
+                    if (score.score < 60) {
+                        itemColors.push('#f44336'); // 红色
+                    } else if (score.score < 80) {
+                        itemColors.push('#ff9800'); // 橙色
+                    } else {
+                        itemColors.push('#4caf50'); // 绿色
+                    }
                 }
             });
             
-            const ctx = document.createElement('canvas');
-            ctx.id = 'studentScoreChartCanvas';
             const chartContainer = document.getElementById('studentScoreChart');
             chartContainer.innerHTML = '';
-            chartContainer.appendChild(ctx);
 
             if (labels.length === 0) {
                 chartContainer.innerHTML = `
@@ -940,45 +865,71 @@
                 return;
             }
 
-            window.createChart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: '作业成绩',
-                        data: scoreData,
-                        backgroundColor: scoreData.map(score => {
-                            if (score < 60) return 'rgba(244, 67, 54, 0.8)';
-                            if (score < 80) return 'rgba(255, 152, 0, 0.8)';
-                            return 'rgba(76, 175, 80, 0.8)';
-                        }),
-                        borderColor: scoreData.map(score => {
-                            if (score < 60) return 'rgba(244, 67, 54, 1)';
-                            if (score < 80) return 'rgba(255, 152, 0, 1)';
-                            return 'rgba(76, 175, 80, 1)';
-                        }),
-                        borderWidth: 1
-                    }]
+            // 创建ECharts实例
+            const myChart = echarts.init(chartContainer);
+            
+            // 设置图表配置项
+            const option = {
+                title: {
+                    text: '作业成绩统计图',
+                    left: 'center'
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: '分数'
-                            }
-                        }
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
                     },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+                    formatter: function(params) {
+                        return params[0].name + '<br/>' + '成绩: ' + params[0].value + '分';
                     }
-                }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '15%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'category',
+                    data: labels,
+                    axisLabel: {
+              
+                        interval: 0
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    min: 0,
+                    max: 100,
+                    name: '分数',
+                    axisLabel: {
+                        formatter: '{value} 分'
+                    }
+                },
+                series: [{
+                    name: '作业成绩',
+                    type: 'bar',
+                    data: scoreData.map((value, index) => ({
+                        value: value,
+                        itemStyle: {
+                            color: itemColors[index]
+                        }
+                    })),
+                    label: {
+                        show: true,
+                        position: 'top',
+                        formatter: '{c}分'
+                    },
+                    barWidth: '60%'
+                }]
+            };
+            
+            // 设置图表配置项
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
             });
         }
 
