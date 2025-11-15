@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.ExamMapper">
+
+    <!-- 获取所有考试 -->
+    <select id="getAllExams" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页获取考试 -->
+    <select id="getExamsByPage" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        ORDER BY created_at DESC 
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 获取考试总数 -->
+    <select id="getTotalExams" resultType="int">
+        SELECT COUNT(*) FROM exam
+    </select>
+
+    <!-- 根据ID获取考试 -->
+    <select id="getExamById" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE id = #{id}
+    </select>
+
+    <!-- 新增考试 -->
+    <insert id="insertExam" parameterType="com.softcon.entity.Exam" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO exam (title, description, paper_id, duration, start_time, end_time, 
+                         status, created_at, updated_at) 
+        VALUES (#{title}, #{description}, #{paperId}, #{duration}, #{startTime}, #{endTime}, 
+                #{status}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <!-- 更新考试 -->
+    <update id="updateExam" parameterType="com.softcon.entity.Exam">
+        UPDATE exam 
+        SET title = #{title}, 
+            description = #{description}, 
+            paper_id = #{paperId}, 
+            duration = #{duration}, 
+            start_time = #{startTime}, 
+            end_time = #{endTime}, 
+            status = #{status}, 
+            updated_at = #{updatedAt} 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除考试 -->
+    <delete id="deleteExamById">
+        DELETE FROM exam WHERE id = #{id}
+    </delete>
+
+    <!-- 根据状态获取考试 -->
+    <select id="getExamsByStatus" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE status = #{status} 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 更新考试状态 -->
+    <update id="updateExamStatus">
+        UPDATE exam SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 搜索考试 -->
+    <select id="searchExams" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE title LIKE CONCAT('%', #{keyword}, '%') 
+           OR description LIKE CONCAT('%', #{keyword}, '%') 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 分页搜索考试 -->
+    <select id="searchExamsByPage" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE title LIKE CONCAT('%', #{keyword}, '%') 
+           OR description LIKE CONCAT('%', #{keyword}, '%') 
+        ORDER BY created_at DESC 
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <!-- 获取搜索结果的总数 -->
+    <select id="getSearchTotalExams" resultType="int">
+        SELECT COUNT(*) FROM exam 
+        WHERE title LIKE CONCAT('%', #{keyword}, '%') 
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <!-- 根据试卷ID获取考试 -->
+    <select id="getExamsByPaperId" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE paper_id = #{paperId} 
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 获取即将开始的考试 -->
+    <select id="getUpcomingExams" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status, created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE start_time > NOW() 
+        ORDER BY start_time ASC
+    </select>
+
+    <!-- 获取进行中的考试 -->
+    <select id="getOngoingExams" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status,  created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE start_time &lt;= NOW() AND end_time >= NOW()
+        ORDER BY start_time ASC
+    </select>
+
+    <!-- 获取已结束的考试 -->
+    <select id="getEndedExams" resultType="com.softcon.entity.Exam">
+        SELECT id, title, description, paper_id as paperId, duration, start_time as startTime, end_time as endTime, 
+               status,  created_at as createdAt, updated_at as updatedAt 
+        FROM exam 
+        WHERE end_time &lt; NOW()
+        ORDER BY end_time DESC
+    </select>
+
+    <!-- 新增考试提交记录 -->
+    <insert id="insertExamSubmission" parameterType="com.softcon.entity.ExamSubmission" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO exam_submission (exam_id, paper_id, student_id, student_name, 
+                                     start_time, submit_time, score, status, answers, used_time) 
+        VALUES (#{examId}, #{paperId}, #{studentId}, #{studentName}, 
+                #{startTime}, #{submitTime}, #{score}, #{status}, #{answers}, #{usedTime})
+    </insert>
+
+    <!-- 更新考试提交记录 -->
+    <update id="updateExamSubmission" parameterType="com.softcon.entity.ExamSubmission">
+        UPDATE exam_submission 
+        SET exam_id = #{examId}, 
+            paper_id = #{paperId}, 
+            student_id = #{studentId}, 
+            student_name = #{studentName}, 
+            start_time = #{startTime}, 
+            submit_time = #{submitTime}, 
+            score = #{score}, 
+            status = #{status}, 
+            answers = #{answers}, 
+            used_time = #{usedTime} 
+        WHERE id = #{id}
+    </update>
+
+    <!-- 根据ID获取考试提交记录 -->
+    <select id="getExamSubmissionById" resultType="java.util.Map">
+        SELECT id, exam_id as examId, paper_id as paperId, student_id as studentId, student_name as studentName, 
+               start_time as startTime, submit_time as submitTime, score, status, answers, used_time as usedTime 
+        FROM exam_submission 
+        WHERE id = #{id}
+    </select>
+
+    <!-- 根据考试ID和学生ID获取提交记录 -->
+    <select id="getSubmissionByExamAndStudent" resultType="java.util.Map">
+        SELECT id, exam_id as examId, paper_id as paperId, student_id as studentId, student_name as studentName, 
+               start_time as startTime, submit_time as submitTime, score, status, answers, used_time as usedTime 
+        FROM exam_submission 
+        WHERE exam_id = #{examId} AND student_id = #{studentId}
+    </select>
+
+    <!-- 根据考试ID获取所有提交记录 -->
+    <select id="getSubmissionsByExamId" resultType="java.util.Map">
+        SELECT id, exam_id as examId, paper_id as paperId, student_id as studentId, student_name as studentName, 
+               start_time as startTime, submit_time as submitTime, score, status, answers, used_time as usedTime 
+        FROM exam_submission 
+        WHERE exam_id = #{examId} 
+        ORDER BY submit_time DESC
+    </select>
+
+    <!-- 根据学生ID获取所有提交记录 -->
+    <select id="getSubmissionsByStudentId" resultType="java.util.Map">
+        SELECT id, exam_id as examId, paper_id as paperId, student_id as studentId, student_name as studentName, 
+               start_time as startTime, submit_time as submitTime, score, status, answers, used_time as usedTime 
+        FROM exam_submission 
+        WHERE student_id = #{studentId} 
+        ORDER BY submit_time DESC
+    </select>
+
+    <!-- 更新提交记录状态 -->
+    <update id="updateSubmissionStatus">
+        UPDATE exam_submission SET status = #{status} WHERE id = #{id}
+    </update>
+
+    <!-- 更新提交记录分数 -->
+    <update id="updateSubmissionScore">
+        UPDATE exam_submission SET score = #{score} WHERE id = #{id}
+    </update>
+
+    <!-- 获取考试的提交统计信息 -->
+    <select id="getExamSubmissionStats" resultType="java.util.Map">
+        SELECT id, exam_id as examId, paper_id as paperId, student_id as studentId, student_name as studentName, 
+               start_time as startTime, submit_time as submitTime, score, status, answers, used_time as usedTime 
+        FROM exam_submission 
+        WHERE exam_id = #{examId} 
+        ORDER BY score DESC, submit_time ASC
+    </select>
+
+
+</mapper>

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试卷管理 - 软工实践系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .tools {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .search-box input {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 300px;
+        }
+
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+
+        .search-btn {
+            background-color: #008CBA;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-btn:hover {
+            background-color: #007bb5;
+        }
+
+        .paper-list {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .edit-btn, .detail-btn, .delete-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn {
+            background-color: #2196F3;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .detail-btn {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        .detail-btn:hover {
+            background-color: #F57C00;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination button.active {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .pagination button:disabled {
+            background-color: #f9f9f9;
+            color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>软工实践系统</h1>
+        <div class="nav">
+            <a href="/assignment/list">作业管理</a>
+            <a href="/exam/list">考试管理</a>
+            <a href="/paper/list" style="background-color: rgba(255, 255, 255, 0.3);">试卷管理</a>
+            <a href="/question/list">题库管理</a>
+        </div>
+        <div class="user-info">
+            <span th:text="${teacher.name}">管理员</span>
+            <button class="logout-btn" onclick="location.href='/logout'">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">试卷管理</h2>
+        
+        <div class="tools">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="搜索试卷标题或描述..." />
+                <button class="search-btn" onclick="searchPapers()">搜索</button>
+            </div>
+            <button class="add-btn" onclick="location.href='/paper/add'">添加试卷</button>
+        </div>
+
+        <div class="paper-list">
+            <table id="paperTable">
+                <thead>
+                    <tr>
+                        <th>试卷ID</th>
+                        <th>试卷标题</th>
+                        <th>描述</th>
+                        <th>题目数量</th>
+                        <th>总分</th>
+                        <th>难度</th>
+                        <th>创建者</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="paperTableBody">
+                    <!-- 试卷列表数据将通过JavaScript动态加载 -->
+                    <tr>
+                        <td colspan="9" class="empty-message">正在加载试卷列表...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="pagination" id="pagination">
+                <!-- 分页按钮将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2024 软工实践系统 版权所有</p>
+        <p>提供作业管理、考试管理、试卷管理、题库管理等功能</p>
+    </footer>
+
+    <script>
+        // 当前页码和每页大小
+        let currentPage = 1;
+        const pageSize = 10;
+        let currentKeyword = '';
+
+        // 页面加载时获取试卷列表
+        window.onload = function() {
+            loadPapers(currentPage);
+        };
+
+        // 加载试卷列表
+        function loadPapers(page) {
+            const xhr = new XMLHttpRequest();
+            let url = `/paper/page?page=${page}&pageSize=${pageSize}`;
+            if (currentKeyword) {
+                url += `&keyword=${encodeURIComponent(currentKeyword)}`;
+            }
+            
+            xhr.open('GET', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            renderPaperList(response.data.papers);
+                            renderPagination(response.data.page, response.data.totalPages);
+                            currentPage = page;
+                        } else {
+                            alert(response.message || '加载试卷失败');
+                            document.getElementById('paperTableBody').innerHTML = 
+                                '<tr><td colspan="9" class="empty-message">加载失败，请刷新页面重试</td></tr>';
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                        document.getElementById('paperTableBody').innerHTML = 
+                            '<tr><td colspan="9" class="empty-message">网络错误，请稍后重试</td></tr>';
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // 渲染试卷列表
+        function renderPaperList(papers) {
+            const tbody = document.getElementById('paperTableBody');
+            
+            if (!papers || papers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="empty-message">暂无试卷数据</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            papers.forEach(paper => {
+                html += `
+                    <tr>
+                        <td>${paper.id}</td>
+                        <td>${paper.title}</td>
+                        <td>${paper.description || '-'}</td>
+                        <td>${paper.totalQuestions}</td>
+                        <td>${paper.totalScore}</td>
+                        <td>${paper.difficulty || '-'}</td>
+                        <td>${paper.teacherName}</td>
+                        <td>${paper.createdAt}</td>
+                        <td class="actions">
+                            <button class="detail-btn" onclick="viewPaperDetail(${paper.id})")>详情</button>
+                            <button class="edit-btn" onclick="editPaper(${paper.id})")>编辑</button>
+                            <button class="delete-btn" onclick="deletePaper(${paper.id}, '${paper.title}')")>删除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        // 渲染分页
+        function renderPagination(page, totalPages) {
+            const pagination = document.getElementById('pagination');
+            let html = '';
+            
+            // 上一页按钮
+            html += `<button onclick="loadPapers(${page - 1})" ${page <= 1 ? 'disabled' : ''}>上一页</button>`;
+            
+            // 页码按钮
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            for (let i = startPage; i <= endPage; i++) {
+                html += `<button onclick="loadPapers(${i})" ${i === page ? 'class="active"' : ''}>${i}</button>`;
+            }
+            
+            // 下一页按钮
+            html += `<button onclick="loadPapers(${page + 1})" ${page >= totalPages ? 'disabled' : ''}>下一页</button>`;
+            
+            pagination.innerHTML = html;
+        }
+
+        // 搜索试卷
+        function searchPapers() {
+            const keyword = document.getElementById('searchInput').value.trim();
+            currentKeyword = keyword;
+            loadPapers(1);
+        }
+
+        // 查看试卷详情
+        function viewPaperDetail(paperId) {
+            location.href = `/paper/detail/${paperId}`;
+        }
+
+        // 编辑试卷
+        function editPaper(paperId) {
+            location.href = `/paper/edit/${paperId}`;
+        }
+
+        // 删除试卷
+        function deletePaper(paperId, paperTitle) {
+            if (confirm(`确定要删除试卷"${paperTitle}"吗？删除后将无法恢复。`)) {
+                const xhr = new XMLHttpRequest();
+                xhr.open('DELETE', `/paper/delete/${paperId}`, true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                alert('删除成功');
+                                loadPapers(currentPage);
+                            } else {
+                                alert(response.message || '删除失败');
+                            }
+                        } else {
+                            alert('网络错误，请稍后重试');
+                        }
+                    }
+                };
+                xhr.send();
+            }
+        }
+    </script>
+</body>
+</html>

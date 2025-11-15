@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加试卷 - 软工实践系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .paper-form {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            border: none;
+            background-color: transparent;
+            cursor: pointer;
+            font-size: 16px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-btn.active {
+            color: #4CAF50;
+            border-bottom-color: #4CAF50;
+        }
+
+        .tab-btn:hover {
+            color: #4CAF50;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .question-selection {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .question-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .question-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .question-content {
+            flex: 1;
+        }
+
+        .question-meta {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .question-score-input {
+            width: 60px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .random-paper-settings {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .random-setting-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .submit-btn,
+        .cancel-btn,
+        .random-generate-btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .submit-btn:hover {
+            background-color: #45a049;
+        }
+
+        .cancel-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .cancel-btn:hover {
+            background-color: #da190b;
+        }
+
+        .random-generate-btn {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        .random-generate-btn:hover {
+            background-color: #F57C00;
+        }
+
+        .selected-count {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>软工实践系统</h1>
+        <div class="nav">
+            <a href="/assignment/list">作业管理</a>
+            <a href="/exam/list">考试管理</a>
+            <a href="/paper/list" style="background-color: rgba(255, 255, 255, 0.3);">试卷管理</a>
+            <a href="/question/list">题库管理</a>
+        </div>
+        <div class="user-info">
+            <span th:text="${teacher.name}">管理员</span>
+            <button class="logout-btn" onclick="location.href='/logout'">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">添加试卷</h2>
+        
+        <div class="paper-form">
+            <div class="form-group">
+                <label for="title">试卷标题 <span style="color: red;">*</span></label>
+                <input type="text" id="title" placeholder="请输入试卷标题" required>
+            </div>
+
+            <div class="form-group">
+                <label for="description">试卷描述</label>
+                <textarea id="description" placeholder="请输入试卷描述（可选）"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="difficulty">难度级别</label>
+                <select id="difficulty">
+                    <option value="">请选择难度</option>
+                    <option value="简单">简单</option>
+                    <option value="中等">中等</option>
+                    <option value="困难">困难</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>组卷方式</label>
+                <div class="tabs">
+                    <button class="tab-btn active" onclick="switchTab('manual')">手动选择题目</button>
+                    <button class="tab-btn" onclick="switchTab('random')">随机组卷</button>
+                </div>
+            </div>
+
+            <!-- 手动选择题目选项卡 -->
+            <div id="manual-tab" class="tab-content active">
+                <div class="search-box" style="margin-bottom: 15px;">
+                    <input type="text" id="questionSearch" placeholder="搜索题目..." onkeyup="filterQuestions()">
+                </div>
+                <div class="question-selection" id="questionList">
+                    <!-- 题目列表将通过JavaScript动态加载 -->
+                    <div style="text-align: center; padding: 20px; color: #999;">正在加载题目列表...</div>
+                </div>
+                <div class="selected-count">已选择: <span id="selectedCount">0</span> 道题目</div>
+            </div>
+
+            <!-- 随机组卷选项卡 -->
+            <div id="random-tab" class="tab-content">
+                <div class="random-paper-settings">
+                    <div class="random-setting-group">
+                        <label for="questionCount">题目数量 <span style="color: red;">*</span></label>
+                        <input type="number" id="questionCount" min="1" placeholder="请输入题目数量" required>
+                    </div>
+                    <div class="random-setting-group">
+                        <label for="randomDifficulty">题目难度</label>
+                        <select id="randomDifficulty">
+                            <option value="">全部难度</option>
+                            <option value="简单">简单</option>
+                            <option value="中等">中等</option>
+                            <option value="困难">困难</option>
+                        </select>
+                    </div>
+                    <div class="random-setting-group">
+                        <label for="operator">题目类型</label>
+                        <select id="operator">
+                            <option value="">全部类型</option>
+                            <option value="加">加法</option>
+                            <option value="减">减法</option>
+                            <option value="乘">乘法</option>
+                            <option value="除">除法</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="random-generate-btn" style="width: 100%; margin-top: 20px;" onclick="generateRandomPaper()">
+                    生成随机试卷
+                </button>
+            </div>
+
+            <div class="form-actions">
+                <button class="submit-btn" onclick="submitForm()">提交</button>
+                <button class="cancel-btn" onclick="cancel()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div>正在处理，请稍候...</div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2024 软工实践系统 版权所有</p>
+        <p>提供作业管理、考试管理、试卷管理、题库管理等功能</p>
+    </footer>
+
+    <script>
+        let selectedQuestionIds = [];
+        let allQuestions = [];
+        let currentTab = 'manual';
+
+        // 页面加载时初始化
+        window.onload = function() {
+            if (currentTab === 'manual') {
+                loadQuestions();
+            }
+        };
+
+        // 切换选项卡
+        function switchTab(tab) {
+            currentTab = tab;
+            // 更新选项卡按钮状态
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+            document.getElementById(`${tab}-tab`).classList.add('active');
+            
+            // 如果切换到手动选择，加载题目列表
+            if (tab === 'manual') {
+                loadQuestions();
+            }
+        }
+
+        // 加载题目列表
+        function loadQuestions() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/question/page?page=1&pageSize=100', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            allQuestions = response.data.questions;
+                            renderQuestionList(allQuestions);
+                        } else {
+                            alert(response.message || '加载题目失败');
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // 渲染题目列表
+        function renderQuestionList(questions) {
+            const questionList = document.getElementById('questionList');
+            
+            if (!questions || questions.length === 0) {
+                questionList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无题目数据</div>';
+                return;
+            }
+            
+            let html = '';
+            questions.forEach(question => {
+                const isSelected = selectedQuestionIds.includes(question.id);
+                html += `
+                    <div class="question-item">
+                        <input type="checkbox" id="question-${question.id}" 
+                               ${isSelected ? 'checked' : ''} 
+                               onclick="toggleQuestionSelection(${question.id})">
+                        <div class="question-content">
+                            <div><strong>${question.content}</strong></div>
+                            <div class="question-meta">
+                                难度: ${question.difficulty || '-'} | 
+                                类型: ${question.operator || '-'} | 
+                                ID: ${question.id}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            questionList.innerHTML = html;
+            updateSelectedCount();
+        }
+
+        // 过滤题目
+        function filterQuestions() {
+            const keyword = document.getElementById('questionSearch').value.toLowerCase();
+            const filteredQuestions = allQuestions.filter(q => 
+                q.content.toLowerCase().includes(keyword) ||
+                q.id.toString().includes(keyword)
+            );
+            renderQuestionList(filteredQuestions);
+        }
+
+        // 切换题目选择状态
+        function toggleQuestionSelection(questionId) {
+            const index = selectedQuestionIds.indexOf(questionId);
+            if (index > -1) {
+                selectedQuestionIds.splice(index, 1);
+            } else {
+                selectedQuestionIds.push(questionId);
+            }
+            updateSelectedCount();
+        }
+
+        // 更新已选择题目数量
+        function updateSelectedCount() {
+            document.getElementById('selectedCount').textContent = selectedQuestionIds.length;
+        }
+
+        // 提交表单
+        function submitForm() {
+            const title = document.getElementById('title').value.trim();
+            if (!title) {
+                alert('请输入试卷标题');
+                return;
+            }
+
+            // 显示加载遮罩
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            if (currentTab === 'manual') {
+                // 手动组卷
+                if (selectedQuestionIds.length === 0) {
+                    alert('请至少选择一道题目');
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    return;
+                }
+                
+                submitManualPaper(title);
+            } else {
+                // 随机组卷已经在generateRandomPaper函数中处理
+                // 这里可以提示用户先点击生成随机试卷
+                alert('请先点击生成随机试卷按钮');
+                document.getElementById('loadingOverlay').style.display = 'none';
+            }
+        }
+
+        // 提交手动组卷
+        function submitManualPaper(title) {
+            const description = document.getElementById('description').value.trim();
+            const difficulty = document.getElementById('difficulty').value;
+            const teacherName = document.querySelector('.user-info span').textContent;
+            
+            const paperDTO = {
+                title: title,
+                description: description,
+                difficulty: difficulty,
+                teacherName: teacherName,
+                questionIds: selectedQuestionIds
+            };
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/paper/create', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                // 隐藏加载遮罩
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('试卷创建成功');
+                            // 跳转到试卷详情页
+                            location.href = `/paper/detail/${response.paperId}`;
+                        } else {
+                            alert(response.message || '创建失败');
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(paperDTO));
+        }
+
+        // 生成随机试卷
+        function generateRandomPaper() {
+            const title = document.getElementById('title').value.trim();
+            const questionCount = parseInt(document.getElementById('questionCount').value);
+            
+            if (!title) {
+                alert('请输入试卷标题');
+                return;
+            }
+            
+            if (!questionCount || questionCount <= 0) {
+                alert('请输入有效的题目数量');
+                return;
+            }
+            
+            // 显示加载遮罩
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            const description = document.getElementById('description').value.trim();
+            const difficulty = document.getElementById('randomDifficulty').value;
+            const operator = document.getElementById('operator').value;
+            const teacherName = document.querySelector('.user-info span').textContent;
+            
+            const requestData = {
+                title: title,
+                description: description,
+                questionCount: questionCount,
+                difficulty: difficulty,
+                operator: operator
+            };
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/paper/random-create', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                // 隐藏加载遮罩
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('随机组卷成功');
+                            // 跳转到试卷详情页
+                            location.href = `/paper/detail/${response.paperId}`;
+                        } else {
+                            alert(response.message || '生成失败');
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(requestData));
+        }
+
+        // 取消操作
+        function cancel() {
+            if (confirm('确定要取消添加试卷吗？已输入的数据将不会保存。')) {
+                location.href = '/paper/list';
+            }
+        }
+    </script>
+</body>
+</html>

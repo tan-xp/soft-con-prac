@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.PaperMapper">
+
+    <select id="getAllPapers" resultType="com.softcon.entity.Paper">
+        SELECT id,
+               title,
+               description,
+               total_questions AS totalQuestions,
+               total_score AS totalScore,
+               difficulty,
+               teacher_name AS teacherName,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM paper
+        ORDER BY id DESC
+    </select>
+
+    <select id="getPapersByPage" resultType="com.softcon.entity.Paper">
+        SELECT id,
+               title,
+               description,
+               total_questions AS totalQuestions,
+               total_score AS totalScore,
+               difficulty,
+               teacher_name AS teacherName,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM paper
+        ORDER BY id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="getTotalPapers" resultType="int">
+        SELECT COUNT(*) FROM paper
+    </select>
+
+    <select id="getPaperById" parameterType="int" resultType="com.softcon.entity.Paper">
+        SELECT id,
+               title,
+               description,
+               total_questions AS totalQuestions,
+               total_score AS totalScore,
+               difficulty,
+               teacher_name AS teacherName,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM paper
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insertPaper" parameterType="com.softcon.entity.Paper" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO paper (title, description, total_questions, total_score, difficulty, teacher_name, created_at, updated_at)
+        VALUES (#{title}, #{description}, #{totalQuestions}, #{totalScore}, #{difficulty}, #{teacherName}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="updatePaper" parameterType="com.softcon.entity.Paper">
+        UPDATE paper
+        SET title = #{title},
+            description = #{description},
+            total_questions = #{totalQuestions},
+            total_score = #{totalScore},
+            difficulty = #{difficulty},
+            teacher_name = #{teacherName},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deletePaperById" parameterType="int">
+        DELETE FROM paper WHERE id = #{id}
+    </delete>
+
+    <select id="getQuestionsByPaperId" parameterType="int" resultType="com.softcon.entity.PaperQuestion">
+        SELECT pq.id,
+               pq.paper_id AS paperId,
+               pq.question_id AS questionId,
+               pq.score,
+               pq.sort_order AS sortOrder,
+               q.question_text AS question,
+               q.answer AS answer
+        FROM paper_question pq
+        LEFT JOIN question q ON pq.question_id = q.id
+        WHERE pq.paper_id = #{paperId}
+        ORDER BY pq.sort_order
+    </select>
+
+    <insert id="insertPaperQuestion" parameterType="com.softcon.entity.PaperQuestion" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO paper_question (paper_id, question_id, score, sort_order)
+        VALUES (#{paperId}, #{questionId}, #{score}, #{sortOrder})
+    </insert>
+
+    <insert id="batchInsertPaperQuestions" parameterType="java.util.List">
+        INSERT INTO paper_question (paper_id, question_id, score, sort_order)
+        VALUES
+        <foreach collection="paperQuestions" item="pq" separator=",">
+            (#{pq.paperId}, #{pq.questionId}, #{pq.score}, #{pq.sortOrder})
+        </foreach>
+    </insert>
+
+    <delete id="deleteQuestionsByPaperId" parameterType="int">
+        DELETE FROM paper_question WHERE paper_id = #{paperId}
+    </delete>
+
+    <delete id="deletePaperQuestion">
+        DELETE FROM paper_question WHERE paper_id = #{paperId} AND question_id = #{questionId}
+    </delete>
+
+    <select id="getPapersByQuestionId" parameterType="int" resultType="com.softcon.entity.Paper">
+        SELECT p.id,
+               p.title,
+               p.description,
+               p.total_questions AS totalQuestions,
+               p.total_score AS totalScore,
+               p.difficulty,
+               p.teacher_name AS teacherName,
+               p.created_at AS createdAt,
+               p.updated_at AS updatedAt
+        FROM paper p
+        INNER JOIN paper_question pq ON p.id = pq.paper_id
+        WHERE pq.question_id = #{questionId}
+        ORDER BY p.id DESC
+    </select>
+
+    <update id="updatePaperQuestion" parameterType="com.softcon.entity.PaperQuestion">
+        UPDATE paper_question
+        SET score = #{score},
+            sort_order = #{sortOrder}
+        WHERE paper_id = #{paperId} AND question_id = #{questionId}
+    </update>
+
+    <select id="searchPapers" parameterType="string" resultType="com.softcon.entity.Paper">
+        SELECT id,
+               title,
+               description,
+               total_questions AS totalQuestions,
+               total_score AS totalScore,
+               difficulty,
+               teacher_name AS teacherName,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM paper
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+    </select>
+
+    <select id="searchPapersByPage" resultType="com.softcon.entity.Paper">
+        SELECT id,
+               title,
+               description,
+               total_questions AS totalQuestions,
+               total_score AS totalScore,
+               difficulty,
+               teacher_name AS teacherName,
+               created_at AS createdAt,
+               updated_at AS updatedAt
+        FROM paper
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+        LIMIT #{pageSize} OFFSET #{offset}
+    </select>
+
+    <select id="getSearchTotalPapers" parameterType="string" resultType="int">
+        SELECT COUNT(*)
+        FROM paper
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR description LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+</mapper>

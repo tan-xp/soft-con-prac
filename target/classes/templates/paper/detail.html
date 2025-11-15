@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试卷详情 - 软工实践系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .back-btn,
+        .edit-btn,
+        .add-to-exam-btn {
+            padding: 8px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+
+        .back-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .back-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .edit-btn {
+            background-color: #FF9800;
+            color: white;
+        }
+
+        .edit-btn:hover {
+            background-color: #F57C00;
+        }
+
+        .add-to-exam-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .add-to-exam-btn:hover {
+            background-color: #45a049;
+        }
+
+        .paper-info {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .paper-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .paper-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .paper-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            font-size: 14px;
+            color: #666;
+            flex-wrap: wrap;
+        }
+
+        .paper-description {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .paper-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            background-color: #f0f8f1;
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .questions-section {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .question-list {
+            margin-bottom: 20px;
+        }
+
+        .question-item {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .question-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .question-number {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-right: 10px;
+        }
+
+        .question-content {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .question-info {
+            font-size: 14px;
+            color: #666;
+            display: flex;
+            gap: 20px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #ddd;
+        }
+
+        .empty-text {
+            font-size: 16px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .footer {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 40px;
+        }
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background-color: white;
+            padding: 25px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .popup-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .popup-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .popup-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            transition: background-color 0.3s;
+        }
+
+        .popup-close:hover {
+            background-color: #f0f0f0;
+        }
+
+        .popup-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .confirm-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .confirm-btn:hover {
+            background-color: #45a049;
+        }
+
+        .cancel-popup-btn {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .cancel-popup-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .exam-item {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .exam-item:hover {
+            background-color: #f9f9f9;
+        }
+
+        .exam-item.selected {
+            background-color: #e8f5e9;
+            border-color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>软工实践系统</h1>
+        <div class="nav">
+            <a href="/assignment/list">作业管理</a>
+            <a href="/exam/list">考试管理</a>
+            <a href="/paper/list" style="background-color: rgba(255, 255, 255, 0.3);">试卷管理</a>
+            <a href="/question/list">题库管理</a>
+        </div>
+        <div class="user-info">
+            <span th:text="${teacher.name}">管理员</span>
+            <button class="logout-btn" onclick="location.href='/logout'">退出登录</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2 class="page-title">试卷详情</h2>
+        
+        <div class="action-buttons">
+            <button class="back-btn" onclick="goBack()">返回列表</button>
+            <button class="edit-btn" onclick="editPaper()">编辑试卷</button>
+            <button class="add-to-exam-btn" onclick="showAddToExamPopup()">添加到考试</button>
+        </div>
+
+        <div class="paper-info">
+            <div class="paper-header">
+                <h3 class="paper-title" id="paperTitle">试卷标题</h3>
+                <div class="paper-meta">
+                    <span>ID: <strong id="paperId">--</strong></span>
+                    <span>难度: <strong id="paperDifficulty">--</strong></span>
+                    <span>创建者: <strong id="paperCreator">--</strong></span>
+                    <span>创建时间: <strong id="paperCreatedTime">--</strong></span>
+                    <span>更新时间: <strong id="paperUpdatedTime">--</strong></span>
+                </div>
+            </div>
+            
+            <div class="paper-description" id="paperDescription">暂无描述</div>
+            
+            <div class="paper-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalQuestions">0</div>
+                    <div class="stat-label">题目总数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalScore">0</div>
+                    <div class="stat-label">总分</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avgQuestionScore">0</div>
+                    <div class="stat-label">平均每题分数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="questionTypes">0</div>
+                    <div class="stat-label">题目类型数</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <h3 class="section-title">题目列表</h3>
+            <div class="question-list" id="questionList">
+                <div class="empty-state">
+                    <div class="empty-icon">📝</div>
+                    <div class="empty-text">正在加载题目列表...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加到考试弹窗 -->
+    <div class="popup" id="addToExamPopup">
+        <div class="popup-content">
+            <div class="popup-header">
+                <h3 class="popup-title">添加试卷到考试</h3>
+                <button class="popup-close" onclick="closeAddToExamPopup()">&times;</button>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 10px; font-weight: bold;">选择考试：</label>
+                <div id="examList">
+                    <div style="text-align: center; padding: 20px; color: #999;">正在加载考试列表...</div>
+                </div>
+            </div>
+            <div class="popup-actions">
+                <button class="confirm-btn" onclick="confirmAddToExam()">确定</button>
+                <button class="cancel-popup-btn" onclick="closeAddToExamPopup()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div>正在处理，请稍候...</div>
+    </div>
+
+    <footer class="footer">
+        <p>© 2024 软工实践系统 版权所有</p>
+        <p>提供作业管理、考试管理、试卷管理、题库管理等功能</p>
+    </footer>
+
+    <script>
+        let paperId = getUrlParam('id');
+        let selectedExamId = null;
+
+        // 页面加载时初始化
+        window.onload = function() {
+            if (!paperId) {
+                alert('试卷ID不存在');
+                location.href = '/paper/list';
+                return;
+            }
+            
+            // 加载试卷详情
+            loadPaperDetail();
+        };
+
+        // 获取URL参数
+        function getUrlParam(name) {
+            const reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)');
+            const r = window.location.search.substr(1).match(reg);
+            if (r != null) return decodeURIComponent(r[2]);
+            return null;
+        }
+
+        // 加载试卷详情
+        function loadPaperDetail() {
+            // 显示加载遮罩
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/paper/detail/' + paperId, true);
+            xhr.onreadystatechange = function() {
+                // 隐藏加载遮罩
+                document.getElementById('loadingOverlay').style.display = 'none';
+
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            renderPaperDetail(response.data);
+                        } else {
+                            alert(response.message || '加载试卷详情失败');
+                            location.href = '/paper/list';
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // 渲染试卷详情
+        function renderPaperDetail(paper) {
+            // 设置基本信息
+            document.getElementById('paperId').textContent = paper.id;
+            document.getElementById('paperTitle').textContent = paper.title;
+            document.getElementById('paperDifficulty').textContent = paper.difficulty || '无';
+            document.getElementById('paperCreator').textContent = paper.teacherName;
+            document.getElementById('paperCreatedTime').textContent = formatDate(paper.createdTime);
+            document.getElementById('paperUpdatedTime').textContent = formatDate(paper.updatedTime);
+            document.getElementById('paperDescription').textContent = paper.description || '暂无描述';
+            
+            // 设置统计信息
+            const questions = paper.questions || [];
+            const totalQuestions = questions.length;
+            const totalScore = paper.totalScore || 100; // 假设默认总分100
+            const avgScore = totalQuestions > 0 ? (totalScore / totalQuestions).toFixed(1) : 0;
+            
+            // 计算题目类型数
+            const operators = new Set();
+            questions.forEach(q => {
+                if (q.operator) operators.add(q.operator);
+            });
+            
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('totalScore').textContent = totalScore;
+            document.getElementById('avgQuestionScore').textContent = avgScore;
+            document.getElementById('questionTypes').textContent = operators.size;
+            
+            // 渲染题目列表
+            renderQuestions(questions);
+        }
+
+        // 渲染题目列表
+        function renderQuestions(questions) {
+            const questionList = document.getElementById('questionList');
+            
+            if (!questions || questions.length === 0) {
+                questionList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-text">当前试卷暂无题目</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            questions.forEach((question, index) => {
+                html += `
+                    <div class="question-item">
+                        <div class="question-content">
+                            <span class="question-number">${index + 1}.</span>
+                            ${question.content}
+                        </div>
+                        <div class="question-info">
+                            <span>ID: ${question.id}</span>
+                            <span>难度: ${question.difficulty || '无'}</span>
+                            <span>类型: ${question.operator || '无'}</span>
+                            <span>分值: ${question.score || (100 / questions.length).toFixed(1)}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            questionList.innerHTML = html;
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // 返回列表
+        function goBack() {
+            location.href = '/paper/list';
+        }
+
+        // 编辑试卷
+        function editPaper() {
+            location.href = `/paper/edit?id=${paperId}`;
+        }
+
+        // 显示添加到考试弹窗
+        function showAddToExamPopup() {
+            selectedExamId = null;
+            document.getElementById('addToExamPopup').style.display = 'flex';
+            loadExams();
+        }
+
+        // 关闭添加到考试弹窗
+        function closeAddToExamPopup() {
+            document.getElementById('addToExamPopup').style.display = 'none';
+        }
+
+        // 加载考试列表
+        function loadExams() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/exam/page?page=1&pageSize=100', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            renderExams(response.data.exams);
+                        } else {
+                            alert(response.message || '加载考试失败');
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+        // 渲染考试列表
+        function renderExams(exams) {
+            const examList = document.getElementById('examList');
+            
+            if (!exams || exams.length === 0) {
+                examList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #999;">
+                        暂无考试，请先创建考试
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            exams.forEach(exam => {
+                html += `
+                    <div class="exam-item" data-id="${exam.id}" onclick="selectExam(${exam.id})">
+                        <div><strong>${exam.title}</strong></div>
+                        <div style="font-size: 12px; color: #666;">
+                            ID: ${exam.id} | 
+                            创建时间: ${formatDate(exam.createdTime)}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            examList.innerHTML = html;
+        }
+
+        // 选择考试
+        function selectExam(examId) {
+            selectedExamId = examId;
+            // 更新选中状态
+            document.querySelectorAll('.exam-item').forEach(item => {
+                item.classList.remove('selected');
+                if (parseInt(item.dataset.id) === examId) {
+                    item.classList.add('selected');
+                }
+            });
+        }
+
+        // 确认添加到考试
+        function confirmAddToExam() {
+            if (!selectedExamId) {
+                alert('请选择一个考试');
+                return;
+            }
+            
+            // 显示加载遮罩
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            const requestData = {
+                examId: selectedExamId,
+                paperId: paperId
+            };
+            
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/exam/add-paper', true);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.onreadystatechange = function() {
+                // 隐藏加载遮罩
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('添加成功！');
+                            closeAddToExamPopup();
+                        } else {
+                            alert(response.message || '添加失败');
+                        }
+                    } else {
+                        alert('网络错误，请稍后重试');
+                    }
+                }
+            };
+            xhr.send(JSON.stringify(requestData));
+        }
+    </script>
+</body>
+</html>

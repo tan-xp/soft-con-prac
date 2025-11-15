@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试列表 - 软工实践系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav a.active {
+            background-color: rgba(255, 255, 255, 0.3);
+            font-weight: 500;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info span {
+            margin-right: 20px;
+        }
+
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            background-color: white;
+            padding: 20px 30px;
+            border-radius: 8px 8px 0 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+            margin-bottom: 2px;
+        }
+
+        .section-title h2 {
+            font-size: 20px;
+            color: #333;
+            font-weight: normal;
+        }
+
+        .content-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+
+        .operation-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .add-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .add-btn:hover {
+            background-color: #45a049;
+        }
+
+        .refresh-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            margin-right: 10px;
+        }
+
+        .refresh-btn:hover {
+            background-color: #e68900;
+        }
+
+        .search-form {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .search-input,
+        .search-select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .search-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-btn:hover {
+            background-color: #45a049;
+        }
+
+        .reset-btn {
+            background-color: #666;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .reset-btn:hover {
+            background-color: #555;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: normal;
+            color: #666;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status-upcoming {
+            background-color: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .status-ongoing {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .status-ended {
+            background-color: #f5f5f5;
+            color: #666;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .detail-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .detail-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .edit-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .edit-btn:hover {
+            background-color: #e68900;
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .delete-btn:hover {
+            background-color: #d32f2f;
+        }
+
+        .stats-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .stats-btn:hover {
+            background-color: #45a049;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            gap: 5px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background-color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination button:hover {
+            background-color: #f5f5f5;
+        }
+
+        .pagination button.active {
+            background-color: #4CAF50;
+            color: white;
+            border: 1px solid #4CAF50;
+        }
+
+        .pagination .disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Toast通知样式 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            opacity: 0;
+            animation: slideIn 0.3s forwards, fadeOut 0.3s forwards 3s;
+            max-width: 350px;
+        }
+
+        .toast.success {
+            background-color: #4CAF50;
+        }
+
+        .toast.error {
+            background-color: #f44336;
+        }
+
+        .toast.warning {
+            background-color: #ff9800;
+        }
+
+        @keyframes slideIn {
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header class="header">
+        <h1>软工实践系统</h1>
+        <nav class="nav">
+            <a href="/index">首页</a>
+            <a href="/student/list">学生管理</a>
+            <a href="/assignment/list">作业管理</a>
+            <a href="/exam/list" class="active">考试管理</a>
+            <a href="/paper/list">试卷管理</a>
+            <a href="/question/list">试题管理</a>
+            <a href="/score/list">成绩统计</a>
+        </nav>
+        <div class="user-info">
+            <span>欢迎您，<span th:text="${teacher?.teacherName}"></span></span>
+            <a href="/logout" class="logout-btn">退出登录</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="section-title">
+            <h2>考试管理</h2>
+        </div>
+        
+        <div class="content-box">
+            <!-- 操作栏 -->
+            <div class="operation-bar">
+                <div class="left-actions">
+                    <button id="refreshStatusBtn" class="refresh-btn">刷新状态</button>
+                    <a href="/exam/create" class="add-btn">创建考试</a>
+                </div>
+            </div>
+
+            <!-- 搜索栏 -->
+            <div class="search-form">
+                <input type="text" id="searchKeyword" class="search-input" placeholder="搜索考试标题或描述">
+                <select id="statusFilter" class="search-select">
+                    <option value="">所有状态</option>
+                    <option value="upcoming">即将开始</option>
+                    <option value="ongoing">进行中</option>
+                    <option value="ended">已结束</option>
+                </select>
+                <button class="search-btn" onclick="searchExams()">搜索</button>
+                <button class="reset-btn" onclick="refreshExams()">重置</button>
+            </div>
+
+            <!-- 考试列表表格 -->
+            <table id="examTable">
+                <thead>
+                    <tr>
+                        <th>考试ID</th>
+                        <th>标题</th>
+                        <th>描述</th>
+                        <th>开始时间</th>
+                        <th>结束时间</th>
+                        <th>持续时间</th>
+                        <th>教师</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 考试列表数据将通过JavaScript动态加载 -->
+                    <tr id="loadingRow">
+                        <td colspan="9" style="text-align: center; padding: 20px;">加载中...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- 分页控件 -->
+            <div class="pagination" id="pagination">
+                <!-- 分页控件将通过JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/axios.min.js"></script>
+    <script src="/js/exam-status-helper.js"></script>
+    <script src="/js/exam-service.js"></script>
+    <script src="/js/form-validation-helper.js"></script>
+    <script src="/js/page-test-helper.js"></script>
+    <script>
+        // 当前页码和页面大小
+        let currentPage = 1;
+        const pageSize = 10;
+        let currentKeyword = '';
+        let currentStatus = '';
+
+        // 页面加载时初始化
+        window.onload = function() {
+            // 检查服务是否可用
+            if (typeof window.examService === 'undefined') {
+                console.error('examService未加载，请检查脚本引用');
+                showToast('系统错误：服务未加载', 'error');
+                return;
+            }
+            
+            loadExams();
+            
+            // 确保ExamStatusHelper可用
+            if (typeof ExamStatusHelper !== 'undefined' && typeof ExamStatusHelper.init === 'function') {
+                ExamStatusHelper.init();
+            }
+        };
+        
+        // 刷新考试表格数据（供ExamStatusHelper调用）
+        window.refreshExamTable = function() {
+            loadExams(currentPage);
+        };
+
+        // 加载考试列表
+        function loadExams() {
+            // 显示加载状态
+            showLoading(true);
+            const tableBody = document.querySelector('#examTable tbody');
+            
+            // 根据筛选条件调用不同的API
+            if (currentKeyword) {
+                // 使用搜索API
+                examService.searchExamsByPage(currentKeyword, currentPage, pageSize)
+                    .then(result => {
+                        if (result.success) {
+                            renderExamList(result.data.exams);
+                            renderPagination(result.data.total);
+                        }
+                    })
+                    .catch(handleError)
+                    .finally(() => showLoading(false));
+            } 
+            else if (currentStatus) {
+                // 使用状态筛选API
+                examService.getExamsByStatus(currentStatus)
+                    .then(result => {
+                        if (result.success) {
+                            const filteredExams = result.data;
+                            // 简单的前端分页处理
+                            const startIndex = (currentPage - 1) * pageSize;
+                            const endIndex = startIndex + pageSize;
+                            const pagedExams = filteredExams.slice(startIndex, endIndex);
+                            
+                            renderExamList(pagedExams);
+                            renderPagination(filteredExams.length);
+                        }
+                    })
+                    .catch(handleError)
+                    .finally(() => showLoading(false));
+            }
+            else {
+                // 使用普通分页API
+                examService.getExamsByPage(currentPage, pageSize)
+                    .then(result => {
+                        if (result.success) {
+                            renderExamList(result.data.exams);
+                            renderPagination(result.data.total);
+                        }
+                    })
+                    .catch(handleError)
+                    .finally(() => showLoading(false));
+            }
+        }
+        
+        // 显示加载状态
+        function showLoading(show) {
+            const tableBody = document.querySelector('#examTable tbody');
+            if (show) {
+                tableBody.innerHTML = '<tr id="loadingRow"><td colspan="9" style="text-align: center; padding: 20px;">加载中...</td></tr>';
+            }
+        }
+        
+        // 错误处理函数
+        function handleError(error) {
+            console.error('操作失败:', error);
+            const tableBody = document.querySelector('#examTable tbody');
+            tableBody.innerHTML = '<tr><td colspan="9"><div class="empty-message">加载失败，请稍后重试</div></td></tr>';
+            showToast('操作失败: ' + (error.message || '未知错误'), 'error');
+        }
+
+        // 显示Toast通知
+        function showToast(message, type = 'info') {
+            // 确保toast容器存在
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container';
+                document.body.appendChild(toastContainer);
+            }
+            
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            
+            // 添加到容器
+            toastContainer.appendChild(toast);
+            
+            // 设置定时器移除toast
+            setTimeout(() => {
+                toastContainer.removeChild(toast);
+            }, 3500);
+        }
+        
+        // 渲染考试列表
+        function renderExamList(exams) {
+            const tableBody = document.querySelector('#examTable tbody');
+            tableBody.innerHTML = '';
+
+            if (exams.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="9"><div class="empty-message">暂无考试数据</div></td></tr>';
+                return;
+            }
+
+            exams.forEach(exam => {
+                const row = document.createElement('tr');
+                
+                // 使用ExamStatusHelper获取状态信息
+                const statusInfo = ExamStatusHelper.getStatusInfo(null, exam.startTime, exam.endTime);
+                const statusClass = statusInfo.class;
+                const statusText = statusInfo.text;
+
+                row.innerHTML = `
+                    <td>${exam.id}</td>
+                    <td>${exam.title}</td>
+                    <td>${exam.description ? exam.description.substring(0, 30) + (exam.description.length > 30 ? '...' : '') : ''}</td>
+                    <td>${formatDate(exam.startTime)}</td>
+                    <td>${formatDate(exam.endTime)}</td>
+                    <td>${exam.duration} 分钟</td>
+                    <td>${exam.teacherName}</td>
+                    <td><span class="status ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <a href="/exam/detail/${exam.id}" class="detail-btn">查看</a>
+                            <a href="/exam/edit/${exam.id}" class="edit-btn">编辑</a>
+                            <button onclick="deleteExam(${exam.id})" class="delete-btn">删除</button>
+                            <a href="/exam/statistics/${exam.id}" class="stats-btn">统计</a>
+                        </div>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+
+        // 渲染分页控件
+        function renderPagination(total) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            
+            const totalPages = Math.ceil(total / pageSize);
+            
+            // 上一页按钮
+            const prevButton = document.createElement('button');
+            prevButton.textContent = '上一页';
+            prevButton.onclick = () => goToPage(currentPage - 1);
+            prevButton.disabled = currentPage === 1;
+            if (currentPage === 1) {
+                prevButton.classList.add('disabled');
+            }
+            pagination.appendChild(prevButton);
+
+            // 页码按钮
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageButton = document.createElement('button');
+                pageButton.textContent = i;
+                pageButton.onclick = () => goToPage(i);
+                if (i === currentPage) {
+                    pageButton.classList.add('active');
+                }
+                pagination.appendChild(pageButton);
+            }
+
+            // 下一页按钮
+            const nextButton = document.createElement('button');
+            nextButton.textContent = '下一页';
+            nextButton.onclick = () => goToPage(currentPage + 1);
+            nextButton.disabled = currentPage === totalPages;
+            if (currentPage === totalPages) {
+                nextButton.classList.add('disabled');
+            }
+            pagination.appendChild(nextButton);
+        }
+
+        // 跳转到指定页码
+        function goToPage(page) {
+            if (page < 1) return;
+            currentPage = page;
+            loadExams();
+        }
+
+        // 初始化搜索表单验证
+        try {
+            if (FormValidationHelper && typeof FormValidationHelper.initFormValidation === 'function') {
+                FormValidationHelper.initFormValidation('.search-form', {
+                    liveValidation: true
+                });
+            }
+        } catch (error) {
+            console.warn('表单验证初始化失败:', error);
+        }
+        
+        // 搜索考试
+        function searchExams() {
+            currentKeyword = document.getElementById('searchKeyword').value;
+            currentStatus = document.getElementById('statusFilter').value;
+            currentPage = 1; // 重置为第一页
+            loadExams();
+        }
+
+        // 重置搜索
+        function refreshExams() {
+            document.getElementById('searchKeyword').value = '';
+            document.getElementById('statusFilter').value = '';
+            currentKeyword = '';
+            currentStatus = '';
+            currentPage = 1;
+            loadExams();
+        }
+
+        // 删除考试
+        function deleteExam(id) {
+            if (confirm('确定要删除这个考试吗？删除后将无法恢复。')) {
+                examService.deleteExam(id)
+                    .then(result => {
+                        if (result.success) {
+                            showToast('考试删除成功', 'success');
+                            setTimeout(() => {
+                                loadExams();
+                            }, 1000);
+                        }
+                    })
+                    .catch(handleError);
+            }
+        }
+
+        // 格式化日期
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        // 添加刷新状态按钮事件
+        document.getElementById('refreshStatusBtn')?.addEventListener('click', function() {
+            refreshExamStatus();
+        });
+        
+        // 自动刷新考试状态
+        function refreshExamStatus() {
+            examService.autoUpdateAllExamStatus()
+                .then(result => {
+                    if (result.success) {
+                        showToast('考试状态已自动更新', 'success');
+                        loadExams();
+                    }
+                })
+                .catch(handleError);
+        }
+    </script>
+    <footer style="background-color: #4CAF50; color: white; text-align: center; padding: 20px; margin-top: 40px; border-top: 1px solid #e0e0e0;">
+        <div>软工实践系统 &copy; 2024 版权所有</div>
+        <div style="margin-top: 8px; font-size: 14px; opacity: 0.8;">提供考试管理、作业管理等功能</div>
+    </footer>
+</body>
+</html>
