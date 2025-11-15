@@ -1,4 +1,4 @@
-package com.softcon.entity;
+package com.softcon.pojo.entity;
 
 import lombok.Data;
 

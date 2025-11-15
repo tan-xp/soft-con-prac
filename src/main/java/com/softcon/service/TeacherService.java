@@ -1,6 +1,6 @@
 package com.softcon.service;
 
-import com.softcon.entity.Teacher;
+import com.softcon.pojo.entity.Teacher;
 
 /**
  * 教师服务接口

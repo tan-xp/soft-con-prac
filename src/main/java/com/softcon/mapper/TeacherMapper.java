@@ -1,6 +1,6 @@
 package com.softcon.mapper;
 
-import com.softcon.entity.Teacher;
+import com.softcon.pojo.entity.Teacher;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
