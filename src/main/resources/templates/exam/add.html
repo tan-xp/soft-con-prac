@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${exam} != null ? '编辑考试' : '发布新考试'">发布新考试</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"Microsoft YaHei","微软雅黑",sans-serif;background:#f5f5f5;color:#333}
+        .header{background:#4CAF50;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .nav{display:flex;gap:12px}
+        .nav a{color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px}
+        .container{max-width:960px;margin:28px auto;padding:0 20px}
+        .section-title{background:#fff;padding:20px 28px;border-radius:12px 12px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:2px}
+        .content-box{background:#fff;padding:28px;border-radius:0 0 12px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;margin-bottom:8px;color:#444;font-weight:500}
+        .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+        .form-row{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:10px}
+        .radio-group{display:flex;gap:20px;flex-wrap:wrap}
+        .submit-btn{background:#4CAF50;color:#fff;border:none;padding:12px 20px;border-radius:8px;cursor:pointer}
+        .cancel-btn{background:#f1f1f1;color:#666;border:none;padding:12px 20px;border-radius:8px;text-decoration:none}
+        .link-btn{background:#2196F3;color:#fff;border:none;padding:10px 16px;border-radius:8px;text-decoration:none}
+        .input-action{display:flex;gap:10px;align-items:center}
+        .input-action select{flex:1}
+        @media (max-width: 600px){.input-action{flex-direction:column;align-items:stretch}}
+    </style>
+    <style>
+        .toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px}
+        .toast{background:#333;color:#fff;padding:15px 20px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.2);transform:translateX(100%);opacity:0;animation:slideIn .3s forwards,fadeOut .3s forwards 3s;max-width:350px}
+        .toast.success{background:#4CAF50}.toast.error{background:#f44336}.toast.warning{background:#ff9800}
+        @keyframes slideIn{to{transform:translateX(0);opacity:1}}@keyframes fadeOut{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/question/list">试题管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="/exam/list" class="active">考试管理</a>
+        <a href="/score/list">成绩统计</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title">
+        <h2 th:text="${exam} != null ? '编辑考试' : '发布新考试'">发布新考试</h2>
+    </div>
+    <div class="content-box">
+        <form id="examForm" onsubmit="return submitExam()">
+            <input type="hidden" id="examId" th:value="${exam} != null ? ${exam.id} : ''" />
+            <div id="examData" th:if="${exam} != null" th:data-start="${exam.startTime}" th:data-end="${exam.endTime}" th:data-status="${exam.status}" style="display:none"></div>
+            <div class="form-group">
+                <label>考试标题 *</label>
+                <input type="text" id="title" th:value="${exam} != null ? ${exam.title} : ''" required placeholder="请输入考试标题">
+            </div>
+            <div class="form-group">
+                <label>考试描述 *</label>
+                <textarea id="description" required placeholder="请输入考试描述" th:text="${exam} != null ? ${exam.description} : ''"></textarea>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>开始时间 *</label>
+                    <input type="datetime-local" id="startTime" required th:value="${exam} != null ? ${exam.startTime} : ''">
+                </div>
+                <div class="form-group">
+                    <label>结束时间 *</label>
+                    <input type="datetime-local" id="endTime" required th:value="${exam} != null ? ${exam.endTime} : ''">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>试卷来源 *</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="paperSource" value="select" checked onchange="switchSource()"> 从试卷库选择</label>
+                    <label><input type="radio" name="paperSource" value="auto" onchange="switchSource()"> 自动组卷</label>
+                </div>
+            </div>
+            <div id="selectSection" class="form-group">
+                <label>选择试卷 *</label>
+                <div class="input-action">
+                    <select id="paperId">
+                        <option value="">请选择试卷</option>
+                        <option th:each="p : ${papers}" th:value="${p.id}" th:text="${p.name}" th:selected="${exam} != null and ${exam.paperId} == ${p.id}"></option>
+                    </select>
+                    <a href="/paper/list" class="link-btn">前往试卷库管理</a>
+                </div>
+            </div>
+            <div id="autoSection" class="form-row" style="display:none">
+                <div class="form-group">
+                    <label>随机题量 *</label>
+                    <input type="number" id="autoCount" min="1" max="100" value="10">
+                </div>
+                <div class="form-group">
+                    <label>运算符类型</label>
+                    <select id="autoOperator">
+                        <option value="all">全部类型</option>
+                        <option value="+">加法</option>
+                        <option value="-">减法</option>
+                        <option value="mixed">混合运算</option>
+                    </select>
+                </div>
+            </div>
+            <div id="editTip" style="display:none;color:#FF9800;margin-top:10px">当前考试非“未开始”，仅允许修改结束时间</div>
+            <div class="form-actions" style="display:flex;justify-content:flex-end;gap:15px;margin-top:20px">
+                <a href="/exam/list" class="cancel-btn">取消</a>
+                <button type="submit" class="submit-btn" id="submitBtn">提交</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+document.addEventListener('DOMContentLoaded',function(){const id=document.getElementById('examId').value;const start=document.getElementById('startTime');const end=document.getElementById('endTime');const data=document.getElementById('examData');const title=document.getElementById('title');const description=document.getElementById('description');const paperId=document.getElementById('paperId');const editTip=document.getElementById('editTip');const radios=[...document.querySelectorAll('input[name="paperSource"]')];
+  if(!id){const now=new Date();const future=new Date(now.getTime()+2*60*60*1000);const s=now.toISOString().slice(0,16);const e=future.toISOString().slice(0,16);start.value=s;end.value=e;start.min=s;end.min=s;}else if(data){const rawStart=data.getAttribute('data-start');const rawEnd=data.getAttribute('data-end');const status=data.getAttribute('data-status');const toInput=v=>{if(!v) return '';const t=v.replace(' ','T');return t.length>=16?t.slice(0,16):t};start.value=toInput(rawStart);end.value=toInput(rawEnd);
+    if(status && status!=='未开始'){title.setAttribute('disabled','disabled');description.setAttribute('disabled','disabled');start.setAttribute('disabled','disabled');paperId.setAttribute('disabled','disabled');radios.forEach(r=>r.setAttribute('disabled','disabled'));document.getElementById('selectSection').style.opacity='0.7';document.getElementById('randomSection').style.display='none';document.getElementById('manualSection')?.style && (document.getElementById('manualSection').style.display='none');editTip.style.display='block';}}
+  switchSource();});
+function showToast(message,type='info'){let c=document.querySelector('.toast-container');if(!c){c=document.createElement('div');c.className='toast-container';document.body.appendChild(c);}const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=message;c.appendChild(t);setTimeout(()=>{c.removeChild(t);},3500);} 
+function switchSource(){const v=document.querySelector('input[name="paperSource"]:checked').value;document.getElementById('selectSection').style.display=v==='select'?'block':'none';document.getElementById('autoSection').style.display=v==='auto'?'flex':'none';}
+function submitExam(){const id=document.getElementById('examId').value||null;const title=document.getElementById('title').value.trim();const description=document.getElementById('description').value.trim();const startTime=document.getElementById('startTime').value;const endTime=document.getElementById('endTime').value;const data=document.getElementById('examData');const locked=data && data.getAttribute('data-status') && data.getAttribute('data-status')!=='未开始';
+  if(!endTime){showToast('请选择结束时间','warning');return false;}
+  let url='/exam/add'; let payload={};
+  if(id){url='/exam/update'; payload.id=parseInt(id); if(locked){payload.endTime=endTime;} else {const source=document.querySelector('input[name="paperSource"]:checked').value; if(!title){showToast('请输入考试标题','warning');return false;} if(!description){showToast('请输入考试描述','warning');return false;} if(!startTime){showToast('请选择开始时间','warning');return false;} payload={id:parseInt(id), title, description, startTime, endTime}; if(source==='select'){const pid=document.getElementById('paperId').value; if(!pid){showToast('请选择试卷','warning');return false;} payload.paperId=parseInt(pid);} else {showToast('编辑模式暂不支持自动组卷，请到试卷库选择试卷','warning'); return false;}}
+  } else {
+    const source=document.querySelector('input[name="paperSource"]:checked').value; if(!title){showToast('请输入考试标题','warning');return false;} if(!description){showToast('请输入考试描述','warning');return false;} if(!startTime){showToast('请选择开始时间','warning');return false;} payload={title, description, startTime, endTime, paperSource:source}; if(source==='select'){const pid=document.getElementById('paperId').value; if(!pid){showToast('请选择试卷','warning');return false;} payload.paperId=parseInt(pid);} else {const cnt=parseInt(document.getElementById('autoCount').value); const op=document.getElementById('autoOperator').value; payload.autoCount=cnt; payload.autoOperator=op;}
+  }
+  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()).then(d=>{if(d.success){showToast(d.message||'操作成功','success');setTimeout(()=>{window.location.href=d.url||'/exam/list';},1000);}else{showToast(d.message||'操作失败','error');}}).catch(e=>showToast('提交失败：'+e.message,'error')); return false;}
+</script>
+</body>
+</html>

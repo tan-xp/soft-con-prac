@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.softcon.mapper.PaperMapper">
+    <select id="getAllPapers" resultType="com.softcon.entity.Paper">
+        SELECT id, name, description, total_questions AS totalQuestions, created_at AS createdAt
+        FROM paper
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="getPaperById" parameterType="int" resultType="com.softcon.entity.Paper">
+        SELECT id, name, description, total_questions AS totalQuestions, created_at AS createdAt
+        FROM paper
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.softcon.entity.Paper" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO paper (name, description, total_questions, created_at)
+        VALUES (#{name}, #{description}, #{totalQuestions}, #{createdAt})
+    </insert>
+
+    <update id="update" parameterType="com.softcon.entity.Paper">
+        UPDATE paper
+        SET name = #{name},
+            description = #{description},
+            total_questions = #{totalQuestions}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="delete" parameterType="int">
+        DELETE FROM paper WHERE id = #{id}
+    </delete>
+</mapper>

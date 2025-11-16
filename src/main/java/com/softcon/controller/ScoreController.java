@@ -3,6 +3,14 @@ package com.softcon.controller;
 import com.softcon.entity.Assignment;
 import com.softcon.entity.Student;
 import com.softcon.entity.Submission;
+import com.softcon.entity.ExamSubmission;
+import com.softcon.entity.Exam;
+import com.softcon.service.ExamSubmissionService;
+import com.softcon.service.ExamService;
+import com.softcon.entity.Question;
+import com.softcon.mapper.QuestionMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softcon.service.AssignmentService;
 import com.softcon.service.StudentService;
 import com.softcon.service.SubmissionService;
@@ -31,6 +39,15 @@ public class ScoreController {
     
     @Autowired
     private StudentService studentService;
+
+    @Autowired
+    private ExamSubmissionService examSubmissionService;
+
+    @Autowired
+    private ExamService examService;
+
+    @Autowired
+    private QuestionMapper questionMapper;
 
     /**
      * 跳转到成绩管理首页
@@ -72,21 +89,29 @@ public class ScoreController {
                 studentData.put("email", student.getEmail());
                 studentData.put("phone", student.getPhone());
                 
-                // 计算该学生的平均成绩
-                double averageScore = calculateStudentAverageScore(student.getId());
-                studentData.put("averageScore", averageScore);
-                
-                // 统计该学生的作业提交情况
+                // 统计该学生的作业提交率
                 int totalAssignments = assignmentService.getAllAssignments().size();
                 List<Submission> submissions = submissionService.getSubmissionsByStudentId(student.getId());
-                // 只计算状态为"已提交"的提交记录
                 int submittedAssignments = 0;
                 if (submissions != null) {
                     submittedAssignments = (int) submissions.stream()
                             .filter(s -> "已提交".equals(s.getStatus()))
                             .count();
                 }
-                studentData.put("submissionRate", totalAssignments > 0 ? (submittedAssignments * 100.0 / totalAssignments) : 0);
+                double assignmentSubmissionRate = totalAssignments > 0 ? (submittedAssignments * 100.0 / totalAssignments) : 0;
+                studentData.put("assignmentSubmissionRate", assignmentSubmissionRate);
+
+                // 统计该学生的考试提交率
+                int totalExams = examService.getAllExams().size();
+                List<ExamSubmission> examSubs = examSubmissionService.getByStudentId(student.getId());
+                int submittedExams = 0;
+                if (examSubs != null) {
+                    submittedExams = (int) examSubs.stream()
+                            .filter(s -> s.getStatus() != null && s.getStatus().equalsIgnoreCase("completed"))
+                            .count();
+                }
+                double examSubmissionRate = totalExams > 0 ? (submittedExams * 100.0 / totalExams) : 0;
+                studentData.put("examSubmissionRate", examSubmissionRate);
                 
                 studentsList.add(studentData);
             }
@@ -207,6 +232,100 @@ public class ScoreController {
             result.put("message", "获取学生成绩详情失败：" + e.getMessage());
         }
 
+        return result;
+    }
+
+    /**
+     * 获取单个学生的考试成绩详情
+     */
+    @RequestMapping(value = "/getStudentExamScores/{studentId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getStudentExamScores(@PathVariable("studentId") Integer studentId) {
+        Map<String, Object> result = new HashMap<>();
+        List<Map<String, Object>> scoresList = new ArrayList<>();
+        try {
+            Student student = studentService.getStudentById(studentId);
+            if (student == null) {
+                result.put("success", false);
+                result.put("message", "学生不存在");
+                return result;
+            }
+
+            List<ExamSubmission> submissions = examSubmissionService.getByStudentId(studentId);
+            // 收集涉及的考试ID
+            Set<Integer> examIds = new HashSet<>();
+            if (submissions != null) {
+                for (ExamSubmission s : submissions) {
+                    examIds.add(s.getExamId());
+                }
+            }
+            // 构造详情
+            int totalExams = examIds.size();
+            int attendedExams = 0;
+            int passedExams = 0;
+            int totalScore = 0;
+            for (Integer examId : examIds) {
+                Exam exam = examService.getExamById(examId);
+                ExamSubmission sub = submissions.stream().filter(s -> Objects.equals(s.getExamId(), examId)).findFirst().orElse(null);
+                Map<String, Object> item = new HashMap<>();
+                item.put("examId", examId);
+                item.put("examTitle", exam != null ? exam.getTitle() : "");
+                item.put("startTime", exam != null ? exam.getStartTime() : "");
+                item.put("endTime", exam != null ? exam.getEndTime() : "");
+                if (sub != null && "completed".equalsIgnoreCase(sub.getStatus())) {
+                    item.put("submitted", true);
+                    item.put("score", sub.getScore() != null ? sub.getScore() : 0);
+                    item.put("submissionTime", sub.getSubmissionTime());
+                    attendedExams++;
+                    int sc = sub.getScore() != null ? sub.getScore() : 0;
+                    totalScore += sc;
+                    if (sc >= 60) passedExams++;
+                    List<Question> qs = exam != null ? questionMapper.getQuestionsByPaperId(exam.getPaperId()) : java.util.Collections.emptyList();
+                    int totalCount = qs != null ? qs.size() : 0;
+                    int correctCount = 0;
+                    if (sub.getAnswers() != null && totalCount > 0) {
+                        try {
+                            ObjectMapper om = new ObjectMapper();
+                            JsonNode node = om.readTree(sub.getAnswers());
+                            for (Question q : qs) {
+                                JsonNode ans = node.get(String.valueOf(q.getId()));
+                                if (ans != null && ans.isInt() && ans.asInt() == q.getAnswer()) {
+                                    correctCount++;
+                                }
+                            }
+                        } catch (Exception ignore) {}
+                    }
+                    item.put("correctCount", correctCount);
+                    item.put("totalCount", totalCount);
+                } else {
+                    item.put("submitted", false);
+                    item.put("score", 0);
+                    item.put("submissionTime", "未提交");
+                    int totalCount = exam != null ? (questionMapper.getQuestionsByPaperId(exam.getPaperId()).size()) : 0;
+                    item.put("correctCount", 0);
+                    item.put("totalCount", totalCount);
+                }
+                scoresList.add(item);
+            }
+
+            // 统计
+            Map<String, Object> stats = new HashMap<>();
+            stats.put("examAverageScore", attendedExams > 0 ? (double) totalScore / attendedExams : 0);
+            stats.put("totalExams", totalExams);
+            stats.put("attendedExams", attendedExams);
+            stats.put("examPassRate", attendedExams > 0 ? (passedExams * 100.0 / attendedExams) : 0);
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("student", student);
+            data.put("scores", scoresList);
+            data.put("stats", stats);
+            result.put("success", true);
+            result.put("data", data);
+            result.put("message", "获取学生考试成绩详情成功");
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取学生考试成绩失败：" + e.getMessage());
+        }
         return result;
     }
     

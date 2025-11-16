@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试卷库管理 - 作业练习系统</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"Microsoft YaHei","微软雅黑",sans-serif;background:#f5f5f5;color:#333}
+        .header{background:#4CAF50;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .nav{display:flex;gap:12px}
+        .nav a{color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px}
+        .container{max-width:1100px;margin:28px auto;padding:0 20px}
+        .section-title{background:#fff;padding:20px 28px;border-radius:12px 12px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:2px}
+        .content-box{background:#fff;padding:24px;border-radius:0 0 12px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .operation-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .add-btn{background:#4CAF50;color:#fff;border:none;padding:10px 18px;border-radius:8px;text-decoration:none;min-width:140px;text-align:center}
+        .link-btn{background:#9E9E9E;color:#fff;border:none;padding:10px 18px;border-radius:8px;text-decoration:none;min-width:140px;text-align:center}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        thead th{padding:12px 14px;text-align:left;color:#666}
+        tbody tr{background:#fafafa}
+        tbody td{padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee}
+        .empty-message{text-align:center;padding:36px;color:#999}
+        .btn{display:inline-block;padding:6px 12px;border-radius:8px;color:#fff;text-decoration:none;min-width:60px;text-align:center}
+        .btn-detail{background:#2196F3}
+        .btn-delete{background:#f44336;border:none;color:#fff}
+        .actions{display:flex;gap:8px}
+    </style>
+    <style>
+        .toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px}
+        .toast{background:#333;color:#fff;padding:15px 20px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.2);transform:translateX(100%);opacity:0;animation:slideIn .3s forwards,fadeOut .3s forwards 3s;max-width:350px}
+        .toast.success{background:#4CAF50}.toast.error{background:#f44336}.toast.warning{background:#ff9800}
+        @keyframes slideIn{to{transform:translateX(0);opacity:1}}@keyframes fadeOut{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/question/list">试题管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="/exam/list" class="active">考试管理</a>
+        <a href="/score/list">成绩统计</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title"><h2>试卷库管理</h2></div>
+    <div class="content-box">
+        <div class="operation-bar">
+            <div style="display:flex;gap:10px">
+                <a href="/paper/add" class="add-btn">新建试卷</a>
+                <a href="/exam/list" class="link-btn">返回考试管理</a>
+            </div>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>试卷名称</th>
+                <th>描述</th>
+                <th>题目数量</th>
+                <th>创建时间</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(papers)}"><td colspan="5"><div class="empty-message">暂无试卷数据</div></td></tr>
+            <tr th:each="p : ${papers}">
+                <td th:text="${p.name}"></td>
+                <td th:text="${p.description}"></td>
+                <td th:text="${p.totalQuestions}"></td>
+                <td th:text="${p.createdAt}"></td>
+                <td>
+                    <div class="actions">
+                        <a th:href="@{/paper/detail/{id}(id=${p.id})}" class="btn btn-detail">详情</a>
+                        <a th:href="@{/paper/edit/{id}(id=${p.id})}" class="btn btn-detail" style="background:#FF9800">编辑</a>
+                        <button class="btn btn-delete" th:onclick="|deletePaper(${p.id})|">删除</button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function showToast(message,type='info'){let c=document.querySelector('.toast-container');if(!c){c=document.createElement('div');c.className='toast-container';document.body.appendChild(c);}const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=message;c.appendChild(t);setTimeout(()=>{c.removeChild(t);},3500);} 
+function deletePaper(id){if(confirm('确定要删除这个试卷吗？')){fetch('/paper/delete/'+id,{method:'POST',headers:{'Content-Type':'application/json'}}).then(r=>r.json()).then(d=>{if(d.success){showToast('试卷删除成功','success');setTimeout(()=>location.reload(),1000);}else{showToast('试卷删除失败：'+d.message,'error');}}).catch(e=>showToast('操作失败：'+e.message,'error'));}}
+</script>
+</body>
+</html>

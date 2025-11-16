@@ -305,4 +305,70 @@ INSERT INTO `teacher` VALUES (1, 'admin', '123456', '管理员', '13800138000', 
 INSERT INTO `teacher` VALUES (2, 'teacher1', '123456', '张老师', '13900139000', 'teacher1@example.com', '2025-10-22 11:27:58', '2025-10-22 11:27:58');
 INSERT INTO `teacher` VALUES (3, 'teacher2', '123456', '李老师', '13700137000', 'teacher2@example.com', '2025-10-22 11:27:58', '2025-10-22 11:27:58');
 
+-- ----------------------------
+-- Table structure for paper
+-- ----------------------------
+DROP TABLE IF EXISTS `paper`;
+CREATE TABLE `paper`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '试卷名称',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '试卷描述',
+  `total_questions` int NULL DEFAULT 0 COMMENT '题目数量',
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '试卷表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for exam
+-- ----------------------------
+DROP TABLE IF EXISTS `exam`;
+CREATE TABLE `exam`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '考试标题',
+  `description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '考试描述',
+  `start_time` datetime NOT NULL COMMENT '开始时间',
+  `end_time` datetime NOT NULL COMMENT '结束时间',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT '未开始' COMMENT '状态：未开始/进行中/已结束',
+  `created_at` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `paper_id` int NOT NULL COMMENT '关联试卷ID',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_exam_time`(`start_time` ASC, `end_time` ASC) USING BTREE,
+  INDEX `idx_exam_paper`(`paper_id` ASC) USING BTREE,
+  CONSTRAINT `fk_exam_paper` FOREIGN KEY (`paper_id`) REFERENCES `paper` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '考试表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Table structure for exam_submission
+-- ----------------------------
+DROP TABLE IF EXISTS `exam_submission`;
+CREATE TABLE `exam_submission`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `exam_id` int NOT NULL COMMENT '考试ID',
+  `student_id` int NOT NULL COMMENT '学生ID',
+  `student_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT '学生姓名',
+  `submission_time` datetime NULL DEFAULT NULL COMMENT '提交时间',
+  `score` int NULL DEFAULT 0 COMMENT '得分',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL DEFAULT 'pending' COMMENT '状态：pending/completed/overdue',
+  `answers` text CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NULL COMMENT '学生答案JSON字符串',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_exam_submission_exam`(`exam_id` ASC) USING BTREE,
+  INDEX `idx_exam_submission_student`(`student_id` ASC) USING BTREE,
+  CONSTRAINT `fk_exam_submission_exam` FOREIGN KEY (`exam_id`) REFERENCES `exam` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '考试提交表' ROW_FORMAT = Dynamic;
+
+-- Table structure for paper_question
+-- ----------------------------
+DROP TABLE IF EXISTS `paper_question`;
+CREATE TABLE `paper_question`  (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `paper_id` int NOT NULL COMMENT '试卷ID',
+  `question_id` int NOT NULL COMMENT '题目ID',
+  `score` int NOT NULL DEFAULT 0 COMMENT '题目分值',
+  PRIMARY KEY (`id`) USING BTREE,
+  INDEX `idx_paper_question_paper`(`paper_id` ASC) USING BTREE,
+  INDEX `idx_paper_question_question`(`question_id` ASC) USING BTREE,
+  CONSTRAINT `fk_pq_paper` FOREIGN KEY (`paper_id`) REFERENCES `paper` (`id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_pq_question` FOREIGN KEY (`question_id`) REFERENCES `question` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci COMMENT = '试卷-题目关联表' ROW_FORMAT = Dynamic;
+
 SET FOREIGN_KEY_CHECKS = 1;

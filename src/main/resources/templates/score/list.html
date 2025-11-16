@@ -403,6 +403,7 @@
                 <li><a href="/student/list">学生管理</a></li>
                 <li><a href="/question/list">试题管理</a></li>
                 <li><a href="/assignment/list">作业管理</a></li>
+                <li><a href="/exam/list">考试管理</a></li>
                 <li><a href="/score/list" class="active">成绩统计</a></li>
             </ul>
         </nav>
@@ -472,7 +473,7 @@
                         <div class="row mb-4">
                             <div class="col-md-3">
                                 <div class="stat-card">
-                                    <h5>平均成绩</h5>
+                                    <h5>作业平均成绩</h5>
                                     <p id="studentAverageScore" class="stat-value">0</p>
                                 </div>
                             </div>
@@ -495,8 +496,68 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 考试统计卡片 -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <h5>考试平均成绩</h5>
+                                    <p id="studentExamAverageScore" class="stat-value">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <h5>考试总数</h5>
+                                    <p id="studentTotalExams" class="stat-value">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <h5>已参加考试</h5>
+                                    <p id="studentAttendedExams" class="stat-value">0</p>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stat-card">
+                                    <h5>考试及格率</h5>
+                                    <p id="studentExamPassRate" class="stat-value">0</p>
+                                </div>
+                            </div>
+                        </div>
                         
-                        <!-- 成绩统计图 -->
+                        <!-- 作业成绩列表（上移至图表上方） -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>作业成绩详情</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="studentScoresList" class="table-responsive">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 考试成绩列表（上移至图表上方） -->
+                        <div class="card mt-4">
+                            <div class="card-header">
+                                <h5>考试成绩详情</h5>
+                            </div>
+                            <div class="card-body">
+                                <div id="studentExamScoresList" class="table-responsive">
+                                    <div class="text-center py-4">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">加载中...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 成绩统计图（下移至列表下方） -->
                         <div class="row mb-4">
                             <div class="col-md-12">
                                 <div class="card">
@@ -509,18 +570,16 @@
                                 </div>
                             </div>
                         </div>
-                        
-                        <!-- 作业成绩列表 -->
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>作业成绩详情</h5>
-                            </div>
-                            <div class="card-body">
-                                <div id="studentScoresList" class="table-responsive">
-                                    <div class="text-center py-4">
-                                        <div class="spinner-border" role="status">
-                                            <span class="visually-hidden">加载中...</span>
-                                        </div>
+
+                        <!-- 考试成绩统计图（下移至列表下方） -->
+                        <div class="row mb-4">
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>考试成绩统计图</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="studentExamScoreChart" class="chart-container"></div>
                                     </div>
                                 </div>
                             </div>
@@ -653,8 +712,8 @@
                             <th>姓名</th>
                             <th>班级</th>
                             <th>性别</th>
-                            <th>平均成绩</th>
-                            <th>提交率</th>
+                            <th>作业提交率</th>
+                            <th>考试提交率</th>
                             <th>操作</th>
                         </tr>
                     </thead>
@@ -662,25 +721,19 @@
             `;
 
             students.forEach(student => {
-                const averageScore = student.averageScore.toFixed(1);
-                const submissionRate = student.submissionRate.toFixed(1);
-                
-                // 根据平均成绩设置样式
-                let scoreClass = 'text-success';
-                if (averageScore < 60) {
-                    scoreClass = 'text-danger';
-                } else if (averageScore < 80) {
-                    scoreClass = 'text-warning';
-                }
-
+                const assignmentRate = (student.assignmentSubmissionRate || 0).toFixed(1);
+                const examRate = (student.examSubmissionRate || 0).toFixed(1);
+                let assignClass = 'text-success';
+                if (assignmentRate < 50) { assignClass = 'text-danger'; }
+                else if (assignmentRate < 80) { assignClass = 'text-warning'; }
                 html += `
                     <tr>
                         <td>${student.studentId}</td>
                         <td>${student.name}</td>
                         <td>${student.classInfo || '-'}</td>
                         <td>${student.gender === 1 || student.gender === '1' || student.gender === '男' ? '男' : student.gender === 0 || student.gender === '0' || student.gender === '女' ? '女' : '-'}</td>
-                        <td class="${scoreClass}">${averageScore}</td>
-                        <td>${submissionRate}%</td>
+                        <td class="${assignClass}">${assignmentRate}%</td>
+                        <td>${examRate}%</td>
                         <td>
                             <button class="btn btn-sm btn-primary" onclick="viewStudentScores(${student.id})")>查看详情</button>
                         </td>
@@ -704,6 +757,8 @@
             
             // 加载学生成绩详情
             loadStudentScores(studentId);
+            // 加载学生考试成绩详情
+            loadStudentExamScores(studentId);
         }
 
         // 加载学生成绩详情
@@ -756,6 +811,14 @@
             document.getElementById('studentPassedAssignments').textContent = stats.passedAssignments;
         }
 
+        // 填充学生考试统计信息
+        function fillStudentExamStats(stats) {
+            document.getElementById('studentExamAverageScore').textContent = stats.examAverageScore.toFixed(1);
+            document.getElementById('studentTotalExams').textContent = stats.totalExams;
+            document.getElementById('studentAttendedExams').textContent = stats.attendedExams;
+            document.getElementById('studentExamPassRate').textContent = (stats.examPassRate || 0).toFixed(1) + '%';
+        }
+
         // 渲染学生成绩列表
         function renderStudentScoresList(scores) {
             const studentScoresListElement = document.getElementById('studentScoresList');
@@ -788,13 +851,13 @@
             `;
 
             scores.forEach(score => {
-                let statusBadge = '<span class="badge bg-warning">未提交</span>';
+                let statusBadge = '<span class="badge badge-warning">未提交</span>';
                 let scoreText = '-';
                 let scoreClass = '';
                 let correctRateText = '-';
                 
                 if (score.submitted) {
-                    statusBadge = '<span class="badge bg-success">已提交</span>';
+                    statusBadge = '<span class="badge badge-success">已提交</span>';
                     scoreText = score.score;
                     correctRateText = `${score.correctCount}/${score.totalCount} (${Math.round((score.correctCount/score.totalCount)*100)}%)`;
                     
@@ -931,6 +994,101 @@
             window.addEventListener('resize', function() {
                 myChart.resize();
             });
+        }
+
+        // 加载学生考试成绩详情
+        function loadStudentExamScores(studentId) {
+            const examScoresListElement = document.getElementById('studentExamScoresList');
+            examScoresListElement.innerHTML = '<div class="text-center py-4"><div class="spinner-border" role="status"><span class="visually-hidden">加载中...</span></div></div>';
+            fetch(`/score/getStudentExamScores/${studentId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success && data.data) {
+                        fillStudentExamStats(data.data.stats);
+                        renderStudentExamScoresList(data.data.scores);
+                        createStudentExamScoreChart(data.data.scores);
+                    } else {
+                        renderStudentExamScoresList([]);
+                    }
+                })
+                .catch(() => renderStudentExamScoresList([]));
+        }
+
+        // 渲染考试成绩列表
+        function renderStudentExamScoresList(scores) {
+            const el = document.getElementById('studentExamScoresList');
+            if (!scores || scores.length === 0) {
+                el.innerHTML = '<div class="empty-state"><p>暂无考试成绩数据</p></div>';
+                return;
+            }
+            let html = `
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>考试ID</th>
+                            <th>考试标题</th>
+                            <th>开始时间</th>
+                            <th>结束时间</th>
+                            <th>提交状态</th>
+                            <th>成绩</th>
+                            <th>正确率</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            scores.forEach(s => {
+                const statusBadge = s.submitted ? '<span class="badge badge-success">已提交</span>' : '<span class="badge badge-warning">未提交</span>';
+                const score = s.submitted ? s.score : '-';
+                const correctRate = s.submitted && s.totalCount>0 ? `${s.correctCount}/${s.totalCount} (${Math.round((s.correctCount/s.totalCount)*100)}%)` : '-';
+                html += `
+                    <tr>
+                        <td>${s.examId}</td>
+                        <td>${s.examTitle || '-'}</td>
+                        <td>${s.startTime || '-'}</td>
+                        <td>${s.endTime || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${score}</td>
+                        <td>${correctRate}</td>
+                    </tr>
+                `;
+            });
+            html += '</tbody></table>';
+            el.innerHTML = html;
+        }
+
+        // 创建考试成绩统计图
+        function createStudentExamScoreChart(scores) {
+            const labels = [];
+            const scoreData = [];
+            const colors = [];
+            scores.forEach(s => {
+                if (s.submitted) {
+                    labels.push((s.examTitle || '').substring(0, 12));
+                    scoreData.push(s.score);
+                    colors.push(s.score < 60 ? '#f44336' : (s.score < 80 ? '#ff9800' : '#4caf50'));
+                }
+            });
+            const container = document.getElementById('studentExamScoreChart');
+            container.innerHTML = '';
+            if (labels.length === 0) {
+                container.innerHTML = '<div class="empty-state"><p>暂无考试成绩数据用于生成图表</p></div>';
+                return;
+            }
+            const chart = echarts.init(container);
+            const option = {
+                title: { text: '考试成绩统计图', left: 'center' },
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+                grid: { left: '3%', right: '4%', bottom: '15%', containLabel: true },
+                xAxis: { type: 'category', data: labels, axisLabel: { interval: 0 } },
+                yAxis: { type: 'value', min: 0, max: 100, name: '分数', axisLabel: { formatter: '{value} 分' } },
+                series: [{
+                    name: '考试成绩', type: 'bar',
+                    data: scoreData.map((v, i) => ({ value: v, itemStyle: { color: colors[i] } })),
+                    label: { show: true, position: 'top', formatter: '{c}分' }, barWidth: '60%'
+                }]
+            };
+            chart.setOption(option);
+            window.addEventListener('resize', () => chart.resize());
         }
 
         // 搜索学生

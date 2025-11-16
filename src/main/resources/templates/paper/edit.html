@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑试卷 - 作业练习系统</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"Microsoft YaHei","微软雅黑",sans-serif;background:#f5f5f5;color:#333}
+        .header{background:#4CAF50;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .nav{display:flex;gap:12px}
+        .nav a{color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px}
+        .container{max-width:960px;margin:28px auto;padding:0 20px}
+        .section-title{background:#fff;padding:20px 28px;border-radius:12px 12px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:2px}
+        .content-box{background:#fff;padding:24px;border-radius:0 0 12px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .form-group{margin-bottom:18px}
+        .form-group label{display:block;margin-bottom:8px;color:#444;font-weight:500}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+        .inline-actions{display:flex;gap:12px;align-items:center}
+        .inline-actions select{flex:1}
+        .inline-actions .load-btn{height:40px;padding:0 18px}
+        .btn{background:#4CAF50;color:#fff;border:none;padding:12px 20px;border-radius:8px}
+        .cancel-btn{background:#f1f1f1;color:#666;border:none;padding:12px 20px;border-radius:8px;text-decoration:none}
+        .question-item-list{padding:12px;border:1px solid #eee;border-radius:8px;margin-bottom:10px;display:flex;align-items:center;gap:15px;background:#fafafa}
+        .question-item-list.selected{background:#E8F5E9;border-color:#4CAF50}
+    </style>
+    <style>
+        .toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px}
+        .toast{background:#333;color:#fff;padding:15px 20px;border-radius:4px;box-shadow:0 4px 12px rgba(0,0,0,.2);transform:translateX(100%);opacity:0;animation:slideIn .3s forwards,fadeOut .3s forwards 3s;max-width:350px}
+        .toast.success{background:#4CAF50}.toast.error{background:#f44336}.toast.warning{background:#ff9800}
+        @keyframes slideIn{to{transform:translateX(0);opacity:1}}@keyframes fadeOut{from{opacity:1}to{opacity:0;transform:translateY(-10px)}}
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/question/list">试题管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="/exam/list">考试管理</a>
+        <a href="/score/list">成绩统计</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title"><h2>编辑试卷</h2></div>
+    <div class="content-box">
+        <form id="paperEditForm" onsubmit="return submitEdit()">
+            <input type="hidden" id="paperId" th:value="${paper.id}"/>
+            <div class="form-group"><label>试卷名称 *</label><input type="text" id="name" th:value="${paper.name}" required></div>
+            <div class="form-group"><label>试卷描述 *</label><textarea id="description" required th:text="${paper.description}"></textarea></div>
+            <div class="form-group"><label>运算符筛选</label>
+                <div class="inline-actions">
+                    <select id="operatorFilter"><option value="all">全部类型</option><option value="+">加法</option><option value="-">减法</option><option value="mixed">混合运算</option></select>
+                    <button type="button" class="load-btn btn" style="background:#2196F3" onclick="loadQuestions()">加载题库试题</button>
+                </div>
+            </div>
+            <div id="questionList" style="max-height:360px;overflow-y:auto;border:1px solid #eee;border-radius:8px;padding:10px;background:#fafafa"><p>请点击上方按钮加载试题</p></div>
+            <div style="margin-top:10px;color:#666">提示：总分需为100分，支持修改各题分值</div>
+            <div class="form-actions" style="display:flex;justify-content:flex-end;gap:15px;margin-top:20px">
+                <a href="/paper/list" class="cancel-btn">取消</a>
+                <button type="submit" class="btn">保存试卷</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showToast(message,type='info'){let c=document.querySelector('.toast-container');if(!c){c=document.createElement('div');c.className='toast-container';document.body.appendChild(c);}const t=document.createElement('div');t.className=`toast ${type}`;t.textContent=message;c.appendChild(t);setTimeout(()=>{c.removeChild(t);},3500);} 
+let existingScores={}; let existingIds=new Set();
+function init(){const id=document.getElementById('paperId').value;fetch('/paper/detailJson/'+id).then(r=>r.json()).then(d=>{if(d.success){const data=d.data; if(data.scores){existingScores=data.scores;} if(data.questions){existingIds=new Set(data.questions.map(q=>q.id));} loadQuestions();}else{showToast('加载试卷详情失败：'+d.message,'error');}}).catch(e=>showToast('加载试卷详情失败：'+e.message,'error'));}
+function loadQuestions(){let operator=document.getElementById('operatorFilter').value; if(operator==='mixed'){operator='all';} let url='/paper/getQuestions'; if(operator!=='all'){url+='?operator='+encodeURIComponent(operator);} fetch(url).then(r=>r.json()).then(d=>{if(d.success){const list=d.data;const box=document.getElementById('questionList'); if(list.length===0){box.innerHTML='<p>没有找到试题</p>';return;} box.innerHTML=''; list.forEach((q,i)=>{const item=document.createElement('div'); item.className='question-item-list'; const checked=existingIds.has(q.id)?'checked':''; const scoreVal=(existingScores[q.id]!==undefined)?existingScores[q.id]:''; item.innerHTML=`<input type="checkbox" class="question-checkbox" data-id="${q.id}" ${checked}><span><strong>${i+1}.</strong> ${q.question}</span><span>答案: ${q.answer}</span><span>类型: ${getOperatorText(q.operator)}</span><input type="number" class="score-input" min="1" max="100" placeholder="分值" value="${scoreVal}" style="width:80px;margin-left:auto">`; item.addEventListener('click',function(e){if(!e.target.classList.contains('question-checkbox')&&!e.target.classList.contains('score-input')){const cb=this.querySelector('.question-checkbox');cb.checked=!cb.checked;}updateSelectedClass(this);}); const cb=item.querySelector('.question-checkbox'); cb.addEventListener('change',function(){updateSelectedClass(item); if(cb.checked){autoFillScore();}}); if(cb.checked){item.classList.add('selected');} box.appendChild(item);});}else{showToast('加载试题失败：'+d.message,'error');}}).catch(e=>showToast('加载试题失败：'+e.message,'error'))}
+function getOperatorText(o){const m={'+':'加法','-':'减法','mixed':'混合运算'};return m[o]||o;} 
+function updateSelectedClass(el){const cb=el.querySelector('.question-checkbox'); if(cb.checked){el.classList.add('selected');}else{el.classList.remove('selected');}}
+function autoFillScore(){const selected=[...document.querySelectorAll('.question-item-list')].filter(it=>it.querySelector('.question-checkbox').checked); const n=selected.length; if(n===0) return; const base=Math.floor(100/n); const rem=100% n; selected.forEach((it,idx)=>{const input=it.querySelector('.score-input'); if(!input.value){input.value=base+(idx<rem?1:0);} });}
+function submitEdit(){const id=parseInt(document.getElementById('paperId').value);const name=document.getElementById('name').value.trim();const description=document.getElementById('description').value.trim(); if(!name){showToast('请输入试卷名称','warning');return false;} if(!description){showToast('请输入试卷描述','warning');return false;} const selectedItems=[...document.querySelectorAll('.question-item-list')].filter(it=>it.querySelector('.question-checkbox').checked); if(selectedItems.length===0){showToast('请至少选择一道试题','warning');return false;} const items=[]; let total=0; selectedItems.forEach(it=>{const idq=parseInt(it.querySelector('.question-checkbox').getAttribute('data-id')); const input=it.querySelector('.score-input'); let score=parseInt(input.value||'0'); if(!score||score<1){score=0;} items.push({questionId:idq,score:score}); total+=score;}); if(total!==100){showToast('总分需为100分，当前为 '+total+' 分','warning');return false;} const payload={id,name,description,items}; fetch('/paper/update',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.json()).then(d=>{if(d.success){showToast('试卷更新成功','success');setTimeout(()=>{window.location.href=d.url||'/paper/list';},1000);}else{showToast('试卷更新失败：'+d.message,'error');}}).catch(e=>showToast('提交失败：'+e.message,'error')); return false;}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

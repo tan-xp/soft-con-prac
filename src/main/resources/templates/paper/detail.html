@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>试卷详情 - 作业练习系统</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"Microsoft YaHei","微软雅黑",sans-serif;background:#f5f5f5;color:#333}
+        .header{background:#4CAF50;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .header h1 {
+            font-size: 24px;
+            font-weight: normal;
+        }
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        .nav{display:flex;gap:12px}
+        .nav a{color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px}
+        .container{max-width:1100px;margin:28px auto;padding:0 20px}
+        .section-title{background:#fff;padding:20px 28px;border-radius:12px 12px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:2px}
+        .content-box{background:#fff;padding:24px;border-radius:0 0 12px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .info{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+        .info div{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        thead th{padding:12px 14px;text-align:left;color:#666}
+        tbody tr{background:#fafafa}
+        tbody td{padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee}
+        .back-btn{background:#f1f1f1;color:#666;border:none;padding:10px 18px;border-radius:8px;text-decoration:none}
+        .chip{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+        .chip.plus{background:#E8F5E9;color:#2E7D32}
+        .chip.minus{background:#FFEBEE;color:#C62828}
+        .chip.mixed{background:#E3F2FD;color:#1565C0}
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/question/list">试题管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="/exam/list">考试管理</a>
+        <a href="/score/list">成绩统计</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title"><h2>试卷详情</h2></div>
+    <div class="content-box">
+            <div class="info">
+                <div><strong>试卷名称：</strong><span th:text="${paper.name}"></span></div>
+                <div><strong>题目数量：</strong><span th:text="${paper.totalQuestions}"></span></div>
+                <div><strong>描述：</strong><span th:text="${paper.description}"></span></div>
+                <div><strong>创建时间：</strong><span th:text="${paper.createdAt}"></span></div>
+                <div><strong>满分：</strong>100</div>
+                <div><strong>当前总分：</strong><span th:text="${totalScore}"></span></div>
+            </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>题号</th>
+                    <th>题目</th>
+                    <th>答案</th>
+                    <th>类型</th>
+                    <th>分值</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:if="${#lists.isEmpty(questions)}"><td colspan="5">暂无题目</td></tr>
+                <tr th:each="q,idx : ${questions}">
+                    <td th:text="${idx.index + 1}"></td>
+                    <td th:text="${q.question}"></td>
+                    <td th:text="${q.answer}"></td>
+                    <td>
+                        <span class="chip" th:classappend="${q.operator == '+' ? ' plus' : (q.operator == '-' ? ' minus' : ' mixed') }" th:text="${q.operator == '+' ? '加法' : (q.operator == '-' ? '减法' : '混合运算')}"></span>
+                    </td>
+                    <td th:text="${scores[q.id]} ?: 0"></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-top:20px">
+            <a href="/paper/list" class="back-btn">返回试卷库</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

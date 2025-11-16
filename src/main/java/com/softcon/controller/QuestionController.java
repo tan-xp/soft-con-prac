@@ -101,14 +101,14 @@ public class QuestionController {
                 String questionText;
 
                 if (op.equals("+")) {
-                    a = random.nextInt(max - min + 1) + min;
-                    b = random.nextInt(max - min + 1) + min;
-                    answer = a + b;
+                    answer = random.nextInt(max - min + 1) + min;
+                    a = random.nextInt(answer + 1);
+                    b = answer - a;
                     questionText = a + " + " + b + " = ?";
-                } else { // 减法
-                    a = random.nextInt(max - min + 1) + min;
-                    b = random.nextInt(a - min + 1) + min; // 确保结果非负
-                    answer = a - b;
+                } else {
+                    answer = random.nextInt(max - min + 1) + min;
+                    b = random.nextInt(max + 1);
+                    a = b + answer;
                     questionText = a + " - " + b + " = ?";
                 }
 
@@ -116,7 +116,7 @@ public class QuestionController {
                 question.setQuestion(questionText);
                 question.setAnswer(answer);
                 question.setOperator(op);
-                question.setAssignmentId(null); // 临时未分配
+                question.setAssignmentId(null);
 
                 questions.add(question);
             }

@@ -90,6 +90,13 @@ public interface QuestionMapper {
      * 根据运算符类型获取未分配的试题
      */
     List<Question> getUnassignedQuestionsByOperator(@Param("operator") String operator);
+
+    /**
+     * 根据运算符类型获取题库试题（不限制分配状态）
+     */
+    List<Question> getQuestionsByOperator(@Param("operator") String operator);
+
+    List<Question> getQuestionsByPaperId(@Param("paperId") Integer paperId);
     
     /**
      * 更新单个试题的作业ID

@@ -114,6 +114,22 @@
         WHERE assignment_id IS NULL AND operator = #{operator}
         ORDER BY id
     </select>
+
+    <!-- 根据运算符类型获取题库试题（不限制分配状态） -->
+    <select id="getQuestionsByOperator" parameterType="string" resultType="com.softcon.entity.Question">
+        SELECT id, question_text as question, answer, operator, assignment_id as assignmentId
+        FROM question
+        WHERE operator = #{operator}
+        ORDER BY id
+    </select>
+
+    <select id="getQuestionsByPaperId" parameterType="int" resultType="com.softcon.entity.Question">
+        SELECT q.id, q.question_text AS question, q.answer, q.operator, q.assignment_id AS assignmentId
+        FROM paper_question pq
+        JOIN question q ON q.id = pq.question_id
+        WHERE pq.paper_id = #{paperId}
+        ORDER BY pq.id
+    </select>
     
     <!-- 更新单个试题的作业ID -->
     <update id="updateAssignmentId">
