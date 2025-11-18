@@ -12,6 +12,8 @@ import com.softcon.service.ExamService;
 import com.softcon.service.PaperService;
 import com.softcon.service.ExamSubmissionService;
 import com.softcon.mapper.StudentMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -85,6 +87,154 @@ public class ExamController {
         } catch (Exception e) {
             result.put("success", false);
             result.put("message", "获取考试列表失败：" + e.getMessage());
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/detail/{id}", method = RequestMethod.GET)
+    public String toExamDetail(@PathVariable("id") Integer id, Model model, HttpSession session) {
+        Object teacher = session.getAttribute("teacher");
+        if (teacher == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("teacher", teacher);
+        Exam exam = examService.getExamById(id);
+        if (exam == null) {
+            return "redirect:/exam/list";
+        }
+        model.addAttribute("exam", exam);
+        Paper paper = paperService.getPaperById(exam.getPaperId());
+        model.addAttribute("paper", paper);
+        List<Question> questions = paper != null ? questionMapper.getQuestionsByPaperId(paper.getId()) : java.util.Collections.emptyList();
+        model.addAttribute("questions", questions);
+        List<PaperQuestion> pqs = paper != null ? paperQuestionMapper.getByPaperId(paper.getId()) : java.util.Collections.emptyList();
+        Map<Integer, Integer> scores = new HashMap<>();
+        int totalScore = 0;
+        for (PaperQuestion pq : pqs) {
+            Integer sc = pq.getScore() == null ? 0 : pq.getScore();
+            scores.put(pq.getQuestionId(), sc);
+            totalScore += sc;
+        }
+        model.addAttribute("scores", scores);
+        model.addAttribute("totalScore", totalScore);
+        return "exam/detail";
+    }
+
+    @RequestMapping(value = "/submissions/{id}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getExamSubmissions(@PathVariable("id") Integer examId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) {
+                throw new RuntimeException("考试不存在");
+            }
+            List<Question> qs = questionMapper.getQuestionsByPaperId(exam.getPaperId());
+            int totalCount = qs != null ? qs.size() : 0;
+            List<ExamSubmission> submissions = examSubmissionService.getByExamId(examId);
+            List<Map<String, Object>> data = new ArrayList<>();
+            ObjectMapper om = new ObjectMapper();
+            for (ExamSubmission sub : submissions) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("studentId", sub.getStudentId());
+                item.put("studentName", sub.getStudentName());
+                item.put("status", sub.getStatus());
+                item.put("submissionTime", sub.getSubmissionTime());
+                item.put("score", sub.getScore() == null ? 0 : sub.getScore());
+                int correctCount = 0;
+                if (sub.getAnswers() != null && totalCount > 0) {
+                    try {
+                        JsonNode node = om.readTree(sub.getAnswers());
+                        for (Question q : qs) {
+                            JsonNode ans = node.get(String.valueOf(q.getId()));
+                            if (ans != null && ans.isInt() && ans.asInt() == q.getAnswer()) {
+                                correctCount++;
+                            }
+                        }
+                    } catch (Exception ignore) {}
+                }
+                item.put("correctCount", correctCount);
+                item.put("totalCount", totalCount);
+                data.add(item);
+            }
+            result.put("success", true);
+            result.put("data", data);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取提交情况失败：" + e.getMessage());
+        }
+        return result;
+    }
+
+    @RequestMapping(value = "/submissionDetail/{examId}/{studentId}", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getSubmissionDetail(@PathVariable("examId") Integer examId,
+                                                   @PathVariable("studentId") Integer studentId) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            Exam exam = examService.getExamById(examId);
+            if (exam == null) throw new RuntimeException("考试不存在");
+            ExamSubmission sub = examSubmissionService.getByExamAndStudent(examId, studentId);
+            if (sub == null) throw new RuntimeException("未找到该学生的提交记录");
+
+            List<Question> qs = questionMapper.getQuestionsByPaperId(exam.getPaperId());
+            List<PaperQuestion> pqs = paperQuestionMapper.getByPaperId(exam.getPaperId());
+            Map<Integer, Integer> scoreMap = new HashMap<>();
+            for (PaperQuestion pq : pqs) {
+                scoreMap.put(pq.getQuestionId(), pq.getScore() == null ? 0 : pq.getScore());
+            }
+
+            ObjectMapper om = new ObjectMapper();
+            JsonNode answers = null;
+            if (sub.getAnswers() != null && !sub.getAnswers().isEmpty()) {
+                try { answers = om.readTree(sub.getAnswers()); } catch (Exception ignore) {}
+            }
+
+            int correctCount = 0;
+            int totalScore = 0;
+            List<Map<String, Object>> details = new ArrayList<>();
+            for (Question q : qs) {
+                int questionId = q.getId();
+                Integer studentAns = null;
+                boolean correct = false;
+                if (answers != null) {
+                    JsonNode node = answers.get(String.valueOf(questionId));
+                    if (node != null && node.isInt()) {
+                        studentAns = node.asInt();
+                        correct = (studentAns == q.getAnswer());
+                    }
+                }
+                int scoreGot = correct ? scoreMap.getOrDefault(questionId, 0) : 0;
+                if (correct) correctCount++;
+                totalScore += scoreGot;
+                Map<String, Object> item = new HashMap<>();
+                item.put("questionId", questionId);
+                item.put("question", q.getQuestion());
+                item.put("correctAnswer", q.getAnswer());
+                item.put("studentAnswer", studentAns);
+                item.put("correct", correct);
+                item.put("score", scoreMap.getOrDefault(questionId, 0));
+                item.put("scoreGot", scoreGot);
+                details.add(item);
+            }
+
+            Map<String, Object> data = new HashMap<>();
+            data.put("examId", exam.getId());
+            data.put("examTitle", exam.getTitle());
+            data.put("studentId", sub.getStudentId());
+            data.put("studentName", sub.getStudentName());
+            data.put("status", sub.getStatus());
+            data.put("submissionTime", sub.getSubmissionTime());
+            data.put("totalCount", qs != null ? qs.size() : 0);
+            data.put("correctCount", correctCount);
+            data.put("totalScore", totalScore);
+            data.put("details", details);
+
+            result.put("success", true);
+            result.put("data", data);
+        } catch (Exception e) {
+            result.put("success", false);
+            result.put("message", "获取提交详情失败：" + e.getMessage());
         }
         return result;
     }

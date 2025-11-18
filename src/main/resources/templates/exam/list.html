@@ -108,6 +108,7 @@
                 </td>
                 <td>
                     <div class="action-buttons">
+                        <a th:href="@{/exam/detail/{id}(id=${exam.id})}" class="detail-btn">详情</a>
                         <a th:href="@{/exam/add(id=${exam.id})}" class="edit-btn">编辑</a>
                         <button class="delete-btn" th:onclick="|deleteExam(${exam.id})|">删除</button>
                     </div>

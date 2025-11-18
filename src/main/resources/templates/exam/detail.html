@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试详情 - 作业练习系统</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:"Microsoft YaHei","微软雅黑",sans-serif;background:#f5f5f5;color:#333}
+        .header{background:#4CAF50;color:#fff;padding:16px 32px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+        .nav{display:flex;gap:12px}
+        .logout-btn {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+        .nav a{color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px}
+        .container{max-width:1100px;margin:28px auto;padding:0 20px}
+        .section-title{background:#fff;padding:20px 28px;border-radius:12px 12px 0 0;box-shadow:0 2px 8px rgba(0,0,0,.06);margin-bottom:2px}
+        .content-box{background:#fff;padding:24px;border-radius:0 0 12px 12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+        .info{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:16px}
+        .info div{background:#fafafa;border:1px solid #eee;border-radius:8px;padding:12px}
+        table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        thead th{padding:12px 14px;text-align:left;color:#666}
+        tbody tr{background:#fafafa}
+        tbody td{padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee}
+        .back-btn{background:#f1f1f1;color:#666;border:none;padding:10px 18px;border-radius:8px;text-decoration:none}
+        .chip{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+        .chip.plus{background:#E8F5E9;color:#2E7D32}
+        .chip.minus{background:#FFEBEE;color:#C62828}
+        .chip.mixed{background:#E3F2FD;color:#1565C0}
+        .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:600}
+        .badge.upcoming{background:#F3E5F5;color:#6A1B9A}
+        .badge.running{background:#E8F5E9;color:#2E7D32}
+        .badge.ended{background:#FFEBEE;color:#C62828}
+        .modal-overlay{position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:9999}
+        .modal{background:#fff;border-radius:12px;max-width:900px;width:92%;max-height:80%;overflow:hidden;box-shadow:0 12px 28px rgba(0,0,0,.2);animation:modalIn .2s ease}
+        .modal-header{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-bottom:1px solid #eee}
+        .modal-title{font-size:18px}
+        .modal-close{background:#f1f1f1;border:none;padding:8px 12px;border-radius:8px}
+        .modal-body{padding:16px;overflow:auto}
+        .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:12px}
+        .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px}
+        .pill.ok{background:#E8F5E9;color:#2E7D32}
+        .pill.bad{background:#FFEBEE;color:#C62828}
+        table.modal-table{width:100%;border-collapse:separate;border-spacing:0 8px}
+        table.modal-table thead th{padding:12px 14px;text-align:left;color:#666;background:#f8f9fa;position:sticky;top:0}
+        table.modal-table tbody td{padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee;background:#fafafa}
+        @keyframes modalIn{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
+    </style>
+</head>
+<body>
+<header class="header">
+    <h1>作业练习系统</h1>
+    <nav class="nav">
+        <a href="/index">首页</a>
+        <a href="/student/list">学生管理</a>
+        <a href="/question/list">试题管理</a>
+        <a href="/assignment/list">作业管理</a>
+        <a href="/exam/list" class="active">考试管理</a>
+        <a href="/score/list">成绩统计</a>
+    </nav>
+    <div class="user-info">
+        <span>欢迎您，<span th:text="${teacher.name}"></span></span>
+        <a href="/logout" class="logout-btn">退出登录</a>
+    </div>
+</header>
+
+<div class="container">
+    <div class="section-title"><h2>考试详情</h2></div>
+    <div class="content-box">
+        <div class="info">
+            <div><strong>考试标题：</strong><span th:text="${exam.title}"></span></div>
+            <div><strong>状态：</strong><span class="badge" th:classappend="${exam.status == '未开始' ? ' upcoming' : (exam.status == '进行中' ? ' running' : ' ended') }" th:text="${exam.status}"></span></div>
+            <div><strong>开始时间：</strong><span th:text="${exam.startTime}"></span></div>
+            <div><strong>结束时间：</strong><span th:text="${exam.endTime}"></span></div>
+            <div><strong>试卷名称：</strong><span th:text="${paper != null ? paper.name : '—'}"></span></div>
+            <div><strong>试卷满分：</strong>100</div>
+            <div><strong>当前试卷总分：</strong><span th:text="${totalScore}"></span></div>
+        </div>
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>题目</th>
+                <th>答案</th>
+                <th>类型</th>
+                <th>分值</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:if="${#lists.isEmpty(questions)}"><td colspan="5">暂无题目</td></tr>
+            <tr th:each="q,idx : ${questions}">
+                <td th:text="${idx.index + 1}"></td>
+                <td th:text="${q.question}"></td>
+                <td th:text="${q.answer}"></td>
+                <td>
+                    <span class="chip" th:classappend="${q.operator == '+' ? ' plus' : (q.operator == '-' ? ' minus' : ' mixed') }" th:text="${q.operator == '+' ? '加法' : (q.operator == '-' ? '减法' : '混合运算')}"></span>
+                </td>
+                <td th:text="${scores[q.id]} ?: 0"></td>
+            </tr>
+            </tbody>
+        </table>
+        <div style="margin-top:20px">
+            <a href="/exam/list" class="back-btn">返回考试管理</a>
+        </div>
+
+        <div style="margin-top:24px" class="submissions">
+            <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+                <h3 style="font-size:18px">学生提交情况</h3>
+                <input type="text" id="searchStudent" placeholder="按姓名搜索" style="padding:8px 12px;border:1px solid #ddd;border-radius:8px;width:240px" oninput="filterSubmissions()" />
+            </div>
+            <div id="examSubmissionsList" class="table-responsive">
+                <div style="text-align:center;padding:20px;color:#999">正在加载...</div>
+            </div>
+        </div>
+    </div>
+</div>
+<script th:inline="javascript">
+const examId = [[${exam.id}]];
+function loadSubmissions(){
+    const el = document.getElementById('examSubmissionsList');
+    el.innerHTML = '<div style="text-align:center;padding:20px;color:#999">正在加载...</div>';
+    fetch('/exam/submissions/'+examId)
+        .then(r=>r.json())
+        .then(d=>{
+            if(d.success){ renderSubmissions(d.data||[]); cachedSubmissions = d.data||[]; }
+            else { el.innerHTML = '<div style="text-align:center;padding:20px;color:#999">加载失败</div>'; }
+        })
+        .catch(()=>{ el.innerHTML = '<div style="text-align:center;padding:20px;color:#999">加载失败</div>'; });
+}
+let cachedSubmissions = [];
+function renderSubmissions(list){
+    const el = document.getElementById('examSubmissionsList');
+    if(!list || list.length===0){ el.innerHTML = '<div style="text-align:center;padding:20px;color:#999">暂无数据</div>'; return; }
+    let html = '<table style="width:100%;border-collapse:separate;border-spacing:0 8px"><thead><tr>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">学生姓名</th>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">提交状态</th>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">成绩</th>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">正确率</th>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">提交时间</th>'+
+        '<th style="text-align:left;padding:12px 14px;color:#666">操作</th>'+
+        '</tr></thead><tbody>';
+    list.forEach(s=>{
+        const statusBadge = s.status && s.status.toLowerCase()==='completed' ? '<span class="badge running">已提交</span>' : '<span class="badge upcoming">未提交</span>';
+        const correctRate = s.totalCount>0 ? Math.round((s.correctCount*100)/s.totalCount)+'%' : '-';
+        html += `<tr style="background:#fafafa">`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee">${s.studentName||'-'}</td>`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee">${statusBadge}</td>`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee">${s.score||0}</td>`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee">${correctRate}</td>`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee">${s.submissionTime||'-'}</td>`+
+            `<td style="padding:14px 14px;border-top:1px solid #eee;border-bottom:1px solid #eee"><button onclick="viewSubmissionDetail(${examId}, ${s.studentId})" style="background:#2196F3;color:#fff;border:none;padding:6px 12px;border-radius:8px">详情</button></td>`+
+            `</tr>`;
+    });
+    html += '</tbody></table>';
+    el.innerHTML = html;
+}
+function filterSubmissions(){
+    const k = document.getElementById('searchStudent').value.trim().toLowerCase();
+    const filtered = !k ? cachedSubmissions : cachedSubmissions.filter(s => (s.studentName||'').toLowerCase().includes(k));
+    renderSubmissions(filtered);
+}
+document.addEventListener('DOMContentLoaded',loadSubmissions);
+
+const examDetailModalOverlay = document.createElement('div');
+examDetailModalOverlay.className='modal-overlay';
+examDetailModalOverlay.innerHTML = '<div class="modal">\
+<div class="modal-header"><h3 class="modal-title">提交详情</h3><button class="modal-close" id="examDetailClose">关闭</button></div>\
+<div class="modal-body" id="examDetailBody"></div></div>';
+document.body.appendChild(examDetailModalOverlay);
+document.getElementById('examDetailClose').addEventListener('click',()=>{ examDetailModalOverlay.style.display='none'; });
+
+function viewSubmissionDetail(examId, studentId){
+  const body = document.getElementById('examDetailBody');
+  body.innerHTML = '<div style="text-align:center;padding:20px;color:#999">正在加载...</div>';
+  examDetailModalOverlay.style.display='flex';
+  fetch(`/exam/submissionDetail/${examId}/${studentId}`)
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.success){ body.innerHTML = '<div style="text-align:center;padding:20px;color:#999">加载失败</div>'; return; }
+      const info = d.data;
+      let html = `<div class="stat-grid">\
+        <div><strong>学生：</strong>${info.studentName||'-'}</div>\
+        <div><strong>状态：</strong>${info.status||'-'}</div>\
+        <div><strong>提交时间：</strong>${info.submissionTime||'-'}</div>\
+        <div><strong>总分：</strong>${info.totalScore||0}</div>\
+        <div><strong>正确/总题：</strong>${info.correctCount||0}/${info.totalCount||0}</div>\
+      </div>`;
+      html += '<table class="modal-table"><thead><tr>\
+        <th>题目</th>\
+        <th>正确答案</th>\
+        <th>学生答案</th>\
+        <th>分值</th>\
+        <th>得分</th>\
+        <th>判定</th>\
+      </tr></thead><tbody>';
+      (info.details||[]).forEach(it=>{
+        const sa = (it.studentAnswer===null||it.studentAnswer===undefined)?'-':it.studentAnswer;
+        const judge = it.correct ? '<span class="pill ok">正确</span>' : '<span class="pill bad">错误</span>';
+        html += `<tr><td>${it.question}</td>\
+        <td>${it.correctAnswer}</td>\
+        <td>${sa}</td>\
+        <td>${it.score}</td>\
+        <td>${it.scoreGot}</td>\
+        <td>${judge}</td></tr>`;
+      });
+      html += '</tbody></table>';
+      body.innerHTML = html;
+    })
+    .catch(()=>{ body.innerHTML = '<div style="text-align:center;padding:20px;color:#999">加载失败</div>'; });
+}
+</script>
+</body>
+</html>
