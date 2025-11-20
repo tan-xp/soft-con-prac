@@ -3,14 +3,14 @@
 <mapper namespace="com.softcon.mapper.TeacherMapper">
     
     <!-- 根据用户名查询教师信息 -->
-    <select id="findByUsername" resultType="com.softcon.pojo.entity.Teacher">
+    <select id="findByUsername" resultType="com.softcon.entity.Teacher">
         SELECT id, username, password, name, phone, email 
         FROM teacher 
         WHERE username = #{username}
     </select>
     
     <!-- 根据ID查询教师信息 -->
-    <select id="findById" resultType="com.softcon.pojo.entity.Teacher">
+    <select id="findById" resultType="com.softcon.entity.Teacher">
         SELECT id, username, password, name, phone, email 
         FROM teacher 
         WHERE id = #{id}

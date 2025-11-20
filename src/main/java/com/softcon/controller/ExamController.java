@@ -14,6 +14,8 @@ import com.softcon.service.ExamSubmissionService;
 import com.softcon.mapper.StudentMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/exam")
+@Tag(name = "考试管理相关接口")
 public class ExamController {
 
     @Autowired
@@ -42,6 +45,7 @@ public class ExamController {
     private StudentMapper studentMapper;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到考试列表页面")
     public String toExamList(Model model, HttpSession session, @RequestParam(value = "keyword", required = false) String keyword) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -62,6 +66,7 @@ public class ExamController {
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.GET)
+    @Operation(summary ="跳转到添加考试页面")
     public String toAddExam(Model model, HttpSession session, @RequestParam(value = "id", required = false) Integer id) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -79,6 +84,7 @@ public class ExamController {
 
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取考试列表")
     public Map<String, Object> getAllExams() {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -92,6 +98,7 @@ public class ExamController {
     }
 
     @RequestMapping(value = "/detail/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到考试详情页面")
     public String toExamDetail(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -122,6 +129,7 @@ public class ExamController {
 
     @RequestMapping(value = "/submissions/{id}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取考试提交情况")
     public Map<String, Object> getExamSubmissions(@PathVariable("id") Integer examId) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -168,6 +176,7 @@ public class ExamController {
 
     @RequestMapping(value = "/submissionDetail/{examId}/{studentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取考试提交详情")
     public Map<String, Object> getSubmissionDetail(@PathVariable("examId") Integer examId,
                                                    @PathVariable("studentId") Integer studentId) {
         Map<String, Object> result = new HashMap<>();
@@ -241,6 +250,7 @@ public class ExamController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="发布考试")
     public Map<String, Object> addExam(@RequestBody Map<String, Object> requestData) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -351,6 +361,7 @@ public class ExamController {
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="删除考试")
     public Map<String, Object> deleteExam(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -366,6 +377,7 @@ public class ExamController {
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="更新考试")
     public Map<String, Object> updateExam(@RequestBody Exam exam) {
         Map<String, Object> result = new HashMap<>();
         try {

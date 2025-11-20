@@ -2,6 +2,8 @@ package com.softcon.controller;
 
 import com.softcon.entity.Question;
 import com.softcon.mapper.QuestionMapper;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -14,6 +16,7 @@ import java.util.*;
  */
 @Controller
 @RequestMapping("/question")
+@Tag(name = "试题管理相关接口")
 public class QuestionController {
 
     @Autowired
@@ -23,6 +26,7 @@ public class QuestionController {
      * 跳转到试题管理页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到试题管理页面")
     public String toQuestionList(Model model) {
         // 由于没有获取teacher对象的具体实现，这里暂时添加一个默认值
         // 实际使用时应该从会话或当前登录信息中获取
@@ -42,6 +46,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="查询试题（分页）")
     public Map<String, Object> searchQuestions(
             @RequestParam("keyword") String keyword,
             @RequestParam(defaultValue = "1") Integer page,
@@ -78,6 +83,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/generate", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="生成随机试题")
     public Map<String, Object> generateQuestions(
             @RequestParam("count") Integer count,
             @RequestParam("operator") String operator,
@@ -139,6 +145,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="添加试题")
     public Map<String, Object> addQuestion(
             @RequestParam("question") String question,
             @RequestParam("answer") Integer answer,
@@ -167,6 +174,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="删除试题")
     public Map<String, Object> deleteQuestion(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -185,6 +193,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/check", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="校验试题答案")
     public Map<String, Object> checkAnswer(
             @RequestParam("questionId") Integer questionId,
             @RequestParam("answer") Integer answer) {
@@ -214,6 +223,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/saveGenerated", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="保存生成的试题")
     public Map<String, Object> saveGeneratedQuestions(@RequestBody Map<String, Object> requestData) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -249,6 +259,7 @@ public class QuestionController {
      */
     @RequestMapping(value = "/refresh", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="刷新试题列表（分页）")
     public Map<String, Object> refreshQuestions(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize) {

@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import com.softcon.util.JwtUtil;
 
 import jakarta.servlet.http.HttpSession;
@@ -29,6 +31,7 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/student")
+@Tag(name = "学生管理相关接口")
 public class StudentController {
 
     @Autowired
@@ -51,6 +54,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/assignments", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生作业列表")
     public Map<String, Object> getAssignments(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
         
@@ -132,6 +136,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="学生登录")
     public Map<String, Object> studentLogin(@RequestBody Map<String, String> requestData) {
         Map<String, Object> result = new HashMap<>();
 
@@ -192,6 +197,7 @@ public class StudentController {
      * 跳转到学生列表页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到学生列表页面")
     public String toStudentList(Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -212,6 +218,7 @@ public class StudentController {
      * 跳转到添加学生页面
      */
     @RequestMapping(value = "/add", method = RequestMethod.GET)
+    @Operation(summary ="跳转到添加学生页面")
     public String toAddStudent(Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -228,6 +235,7 @@ public class StudentController {
      * 跳转到编辑学生页面
      */
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到编辑学生页面")
     public String toEditStudent(@PathVariable("id") Integer id, Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -252,6 +260,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="添加学生信息")
     public Map<String, Object> addStudent(@RequestBody Student student) {
         Map<String, Object> result = new HashMap<>();
 
@@ -278,6 +287,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="更新学生信息")
     public Map<String, Object> updateStudent(@RequestBody Student student) {
         Map<String, Object> result = new HashMap<>();
 
@@ -304,6 +314,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="删除学生信息")
     public Map<String, Object> deleteStudent(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
 
@@ -329,6 +340,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/search", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="搜索学生信息")
     public Map<String, Object> searchStudents(@RequestParam("keyword") String keyword) {
         Map<String, Object> result = new HashMap<>();
 
@@ -349,6 +361,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/resetPassword", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="重置学生密码")
     public Map<String, Object> resetPassword(@RequestParam("id") Integer id,
             @RequestParam("newPassword") String newPassword) {
         Map<String, Object> result = new HashMap<>();
@@ -375,6 +388,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/submission/detail/{id}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生提交详情")
     public Map<String, Object> getSubmissionDetail(@PathVariable("id") Integer submissionId) {
         Map<String, Object> result = new HashMap<>();
         
@@ -411,6 +425,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/submitAssignment", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="提交作业")
     public Map<String, Object> submitAssignment(
             @RequestBody Map<String, Object> requestData,
             HttpServletRequest request) {
@@ -466,6 +481,7 @@ public class StudentController {
      * 获取学生的作业列表
      */
     @RequestMapping(value = "/assignment/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到学生作业列表页面")
     public String toStudentAssignmentList(Model model, HttpServletRequest request) {
         // 检查登录状态
         String studentId = (String) request.getAttribute("studentId");
@@ -489,6 +505,7 @@ public class StudentController {
      * 获取作业详情（学生端）
      */
     @RequestMapping(value = "/assignment/detail/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到学生作业详情页面")
     public String toStudentAssignmentDetail(
             @PathVariable("id") Integer id,
             Model model,
@@ -517,6 +534,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/scores/{assignmentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生成绩记录")
     public Map<String, Object> getScores(
             @PathVariable(value = "assignmentId", required = false) String assignmentIdStr,
             HttpServletRequest request) {
@@ -653,6 +671,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/scores", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生所有成绩记录")
     public Map<String, Object> getAllScores(HttpServletRequest request) {
         Map<String, Object> result = new HashMap<>();
 
@@ -778,6 +797,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/submit/{assignmentId}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="提交作业并获取评分结果")
     public Map<String, Object> submitAssignmentWithId(
             @PathVariable("assignmentId") String assignmentIdStr,
             @RequestBody Map<String, Object> requestData,
@@ -878,6 +898,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/assignment/complete", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="学生端作业完成提交")
     public Map<String, Object> completeAssignment(
             @RequestBody Map<String, Object> requestData,
             HttpServletRequest request) {
@@ -1010,6 +1031,7 @@ public class StudentController {
      */
     @RequestMapping(value = "/questions/{assignmentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取指定作业题目列表")
     public Map<String, Object> getQuestionsByAssignmentId(
             @PathVariable("assignmentId") String assignmentIdStr,
             HttpServletRequest request) {

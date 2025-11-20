@@ -6,6 +6,8 @@ import com.softcon.entity.Question;
 import com.softcon.mapper.PaperQuestionMapper;
 import com.softcon.mapper.QuestionMapper;
 import com.softcon.service.PaperService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +18,7 @@ import java.util.*;
 
 @Controller
 @RequestMapping("/paper")
+@Tag(name = "试卷管理相关接口")
 public class PaperController {
 
     @Autowired
@@ -26,6 +29,7 @@ public class PaperController {
     private PaperQuestionMapper paperQuestionMapper;
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到试卷列表页面")
     public String toPaperList(Model model, HttpSession session) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -37,6 +41,7 @@ public class PaperController {
     }
 
     @RequestMapping(value = "/add", method = RequestMethod.GET)
+    @Operation(summary ="跳转到添加试卷页面")
     public String toAddPaper(Model model, HttpSession session) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -47,6 +52,7 @@ public class PaperController {
     }
 
     @RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到编辑试卷页面")
     public String toEditPaper(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -59,6 +65,7 @@ public class PaperController {
     }
 
     @RequestMapping(value = "/detail/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到试卷详情页面")
     public String toPaperDetail(@PathVariable("id") Integer id, Model model, HttpSession session) {
         Object teacher = session.getAttribute("teacher");
         if (teacher == null) {
@@ -84,6 +91,7 @@ public class PaperController {
 
     @RequestMapping(value = "/detailJson/{id}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取试卷详情")
     public Map<String, Object> getPaperDetail(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -109,6 +117,7 @@ public class PaperController {
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="更新试卷")
     public Map<String, Object> updatePaper(@RequestBody Map<String, Object> requestData) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -156,6 +165,7 @@ public class PaperController {
 
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取试卷列表")
     public Map<String, Object> getAllPapers() {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -170,6 +180,7 @@ public class PaperController {
 
     @RequestMapping(value = "/getQuestions", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取题库试题列表")
     public Map<String, Object> getQuestions(@RequestParam(value = "operator", required = false) String operator) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -190,6 +201,7 @@ public class PaperController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="创建试卷")
     public Map<String, Object> addPaper(@RequestBody Map<String, Object> requestData) {
         Map<String, Object> result = new HashMap<>();
         try {
@@ -260,6 +272,7 @@ public class PaperController {
 
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="删除试卷")
     public Map<String, Object> deletePaper(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
         try {

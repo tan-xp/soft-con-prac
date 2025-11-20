@@ -1,8 +1,10 @@
 package com.softcon.controller;
 
 import com.softcon.pojo.dto.UserLoginDTO;
-import com.softcon.pojo.entity.Teacher;
+import com.softcon.entity.Teacher;
 import com.softcon.service.TeacherService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,6 +19,7 @@ import java.util.Map;
  */
 @Controller
 @CrossOrigin(origins = "*")
+@Tag(name = "登录相关接口")
 public class LoginController {
     
     @Autowired
@@ -26,6 +29,7 @@ public class LoginController {
      * 跳转到登录页面
      */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @Operation(summary ="跳转到登录页面")
     public String toLogin() {
         return "login";
     }
@@ -35,6 +39,7 @@ public class LoginController {
      */
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="处理登录请求")
     public Map<String, Object> login(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
         
@@ -60,6 +65,7 @@ public class LoginController {
      * 跳转到系统首页
      */
     @RequestMapping(value = "/index", method = RequestMethod.GET)
+    @Operation(summary ="跳转到系统首页")
     public String toIndex(Model model, HttpSession session) {
         // 从session中获取教师信息
         Teacher teacher = (Teacher) session.getAttribute("teacher");
@@ -78,6 +84,7 @@ public class LoginController {
      * 注销登录
      */
     @RequestMapping(value = "/logout", method = RequestMethod.GET)
+    @Operation(summary ="注销登录")
     public String logout(HttpSession session) {
         // 清除session中的用户信息
         session.invalidate();

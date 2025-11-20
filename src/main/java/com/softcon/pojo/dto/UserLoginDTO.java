@@ -1,5 +1,6 @@
 package com.softcon.pojo.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserLoginDTO {
+    @Schema(description = "用户名")
     private String username;
+
+    @Schema(description = "密码")
     private String password;
 }

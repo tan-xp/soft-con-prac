@@ -18,8 +18,7 @@
             color: #333;
             line-height: 1.6;
         }
-        
-        /* 头部导航样式 - 与系统统一 */
+
         .header {
             background-color: #4CAF50;
             color: white;
@@ -29,18 +28,18 @@
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .header h1 {
             font-size: 24px;
             font-weight: normal;
         }
-        
-        /* 导航栏样式 - 与系统统一 */
+
+        /* 导航栏样式 */
         .header nav {
             display: flex;
             align-items: center;
         }
-        
+
         .header nav ul {
             display: flex;
             list-style: none;
@@ -48,7 +47,7 @@
             margin: 0;
             padding: 0;
         }
-        
+
         .header nav ul li a {
             color: white;
             text-decoration: none;
@@ -57,49 +56,20 @@
             transition: background-color 0.3s;
             font-size: 16px;
         }
-        
-        .header nav ul li a:hover, .header nav ul li a.active {
+
+        .header nav ul li a:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-        
-        /* 分页按钮样式 */
-        .page-btn {
-            margin: 0 3px;
-            padding: 5px 10px;
-            border: 1px solid #ddd;
-            background-color: #fff;
-            color: #333;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .page-btn:hover:not(:disabled) {
-            background-color: #f8f9fa;
-            border-color: #4CAF50;
-            color: #4CAF50;
-        }
-        
-        .page-btn.active {
-            background-color: #4CAF50 !important;
-            color: white !important;
-            border-color: #4CAF50 !important;
-        }
-        
-        .page-btn:disabled {
-            cursor: not-allowed;
-            opacity: 0.6;
-        }
-        
+
         .user-info {
             display: flex;
             align-items: center;
         }
-        
+
         .user-info span {
             margin-right: 20px;
         }
-        
+
         .logout-btn {
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
@@ -110,7 +80,7 @@
             transition: background-color 0.3s;
             text-decoration: none;
         }
-        
+
         .logout-btn:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
@@ -498,7 +468,8 @@
                         <div class="pagination-size" style="margin-top: 10px;">
                             <label>每页显示：</label>
                             <select id="pageSize" onchange="changePageSize()">
-                                <option value="10" selected>10</option>
+                                <option value="5" selected>5</option>
+                                <option value="10">10</option>
                                 <option value="20">20</option>
                                 <option value="50">50</option>
                                 <option value="100">100</option>
@@ -641,9 +612,9 @@
     </div>
     
     <!-- 页脚 - 与系统统一 -->
-    <footer class="footer">
-        <p>&copy; 作业练习系统 黑大帅</p>
-    </footer>
+<!--    <footer class="footer">-->
+<!--        <p>&copy; 作业练习系统 黑大帅</p>-->
+<!--    </footer>-->
 
     <!-- 内联JavaScript功能 -->
     <script>
@@ -653,7 +624,7 @@
         let validQuestions = [];
         // 分页相关变量
         let currentPage = 1; // 当前页码
-        let pageSize = 10; // 每页显示数量
+        let pageSize = 5; // 每页显示数量
         let totalItems = 0; // 总记录数
         let totalPages = 1; // 总页数
         let isSearchMode = false; // 是否处于搜索模式

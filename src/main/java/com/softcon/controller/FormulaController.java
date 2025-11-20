@@ -4,6 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,9 +14,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 @RestController
+@Tag(name = "算式服务相关接口")
 public class FormulaController {
 
     @GetMapping("/formula")
+    @Operation(summary ="生成随机加减法题目列表")
     public List<String> randomlyGenerated(){
         return generate50Problems();
     }
@@ -72,6 +76,7 @@ public class FormulaController {
      * @return
      */
     @GetMapping("/calculate")
+    @Operation(summary ="计算加减法表达式")
     public Map<String, Object> calculate(
             @RequestParam("num1") double num1,
             @RequestParam("num2") double num2,
@@ -114,6 +119,7 @@ public class FormulaController {
      */
     @PostMapping("/verify")
     @ResponseBody
+    @Operation(summary ="验证CSV中的算式答案")
     public ResponseEntity<Map<String, Object>> verifyCsv(@RequestParam("file") MultipartFile file) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> details = new ArrayList<>();

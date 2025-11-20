@@ -1,5 +1,6 @@
 package com.softcon.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -7,9 +8,18 @@ import lombok.Data;
  */
 @Data
 public class Question {
-    private Integer id;         // 题目ID
-    private String question;    // 题目内容
-    private Integer answer;     // 正确答案
-    private String operator;    // 运算符类型
-    private Integer assignmentId; // 所属作业ID
+    @Schema(description = "题目ID")
+    private Integer id;
+
+    @Schema(description = "题目内容")
+    private String question;
+
+    @Schema(description = "正确答案")
+    private Integer answer;
+
+    @Schema(description = "运算符类型")
+    private String operator;
+
+    @Schema(description = "所属作业ID")
+    private Integer assignmentId;
 }

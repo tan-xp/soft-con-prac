@@ -14,6 +14,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.softcon.service.AssignmentService;
 import com.softcon.service.StudentService;
 import com.softcon.service.SubmissionService;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,6 +31,7 @@ import java.util.stream.Collectors;
  */
 @Controller
 @RequestMapping("/score")
+@Tag(name = "成绩管理相关接口")
 public class ScoreController {
 
     @Autowired
@@ -53,6 +56,7 @@ public class ScoreController {
      * 跳转到成绩管理首页
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到成绩管理首页")
     public String toScoreList(Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -71,6 +75,7 @@ public class ScoreController {
      */
     @RequestMapping(value = "/getAllStudents", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生列表（成绩管理）")
     public Map<String, Object> getAllStudents() {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> studentsList = new ArrayList<>();
@@ -132,6 +137,7 @@ public class ScoreController {
      */
     @RequestMapping(value = "/getStudentScores/{studentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生作业成绩详情")
     public Map<String, Object> getStudentScores(@PathVariable("studentId") Integer studentId) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> scoresList = new ArrayList<>();
@@ -240,6 +246,7 @@ public class ScoreController {
      */
     @RequestMapping(value = "/getStudentExamScores/{studentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取学生考试成绩详情")
     public Map<String, Object> getStudentExamScores(@PathVariable("studentId") Integer studentId) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> scoresList = new ArrayList<>();
@@ -356,6 +363,7 @@ public class ScoreController {
      */
     @RequestMapping(value = "/getAssignmentHistory/{assignmentId}", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取作业成绩历史")
     public Map<String, Object> getAssignmentHistory(@PathVariable("assignmentId") Integer assignmentId) {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> historyList = new ArrayList<>();
@@ -415,6 +423,7 @@ public class ScoreController {
      */
     @RequestMapping(value = "/getReport", method = RequestMethod.GET)
     @ResponseBody
+    @Operation(summary ="获取成绩报表数据")
     public Map<String, Object> getReport() {
         Map<String, Object> result = new HashMap<>();
 

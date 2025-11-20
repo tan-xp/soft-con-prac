@@ -1,6 +1,6 @@
 package com.softcon.service.impl;
 
-import com.softcon.pojo.entity.Teacher;
+import com.softcon.entity.Teacher;
 import com.softcon.mapper.TeacherMapper;
 import com.softcon.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;

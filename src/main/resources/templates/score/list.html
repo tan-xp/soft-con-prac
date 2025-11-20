@@ -20,8 +20,7 @@
             color: #333;
             line-height: 1.6;
         }
-        
-        /* 头部导航样式 - 与系统统一 */
+
         .header {
             background-color: #4CAF50;
             color: white;
@@ -31,18 +30,18 @@
             align-items: center;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         .header h1 {
             font-size: 24px;
             font-weight: normal;
         }
-        
-        /* 导航栏样式 - 与系统统一 */
+
+        /* 导航栏样式 */
         .header nav {
             display: flex;
             align-items: center;
         }
-        
+
         .header nav ul {
             display: flex;
             list-style: none;
@@ -50,7 +49,7 @@
             margin: 0;
             padding: 0;
         }
-        
+
         .header nav ul li a {
             color: white;
             text-decoration: none;
@@ -59,20 +58,20 @@
             transition: background-color 0.3s;
             font-size: 16px;
         }
-        
-        .header nav ul li a:hover, .header nav ul li a.active {
+
+        .header nav ul li a:hover {
             background-color: rgba(255, 255, 255, 0.2);
         }
-        
+
         .user-info {
             display: flex;
             align-items: center;
         }
-        
+
         .user-info span {
             margin-right: 20px;
         }
-        
+
         .logout-btn {
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
@@ -83,7 +82,7 @@
             transition: background-color 0.3s;
             text-decoration: none;
         }
-        
+
         .logout-btn:hover {
             background-color: rgba(255, 255, 255, 0.3);
         }
@@ -401,10 +400,10 @@
             <ul>
                 <li><a href="/index">首页</a></li>
                 <li><a href="/student/list">学生管理</a></li>
-                <li><a href="/question/list">试题管理</a></li>
+                <li><a href="/question/list" class="active">试题管理</a></li>
                 <li><a href="/assignment/list">作业管理</a></li>
                 <li><a href="/exam/list">考试管理</a></li>
-                <li><a href="/score/list" class="active">成绩统计</a></li>
+                <li><a href="/score/list">成绩统计</a></li>
             </ul>
         </nav>
         <div class="user-info">
@@ -591,9 +590,9 @@
     </div>
     
     <!-- 页脚 - 与系统统一 -->
-    <footer class="footer">
-        <p>&copy; 作业练习系统 黑大帅</p>
-    </footer>
+<!--    <footer class="footer">-->
+<!--        <p>&copy; 作业练习系统 黑大帅</p>-->
+<!--    </footer>-->
 
     <!-- 内联基础JavaScript功能 -->
     <script>

@@ -9,7 +9,11 @@ import com.softcon.entity.Submission;
 import com.softcon.mapper.QuestionMapper;
 import com.softcon.mapper.StudentMapper;
 import com.softcon.mapper.SubmissionMapper;
+import com.softcon.pojo.Result;
+import com.softcon.pojo.vo.SubmissionVO;
 import com.softcon.service.AssignmentService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,6 +27,7 @@ import java.util.*;
  */
 @Controller
 @RequestMapping("/assignment")
+@Tag(name = "作业管理相关接口")
 public class AssignmentController {
     
     @Autowired
@@ -41,6 +46,7 @@ public class AssignmentController {
      * 跳转到作业列表页面
      */
     @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @Operation(summary ="跳转到作业列表页面")
     public String toAssignmentList(Model model, HttpSession session, @RequestParam(value = "keyword", required = false) String keyword) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -74,6 +80,7 @@ public class AssignmentController {
      * 跳转到添加作业页面
      */
     @RequestMapping(value = "/add", method = RequestMethod.GET)
+    @Operation(summary ="跳转到添加作业页面")
     public String toAddAssignment(Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -92,17 +99,15 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/getAll", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, Object> getAllAssignments() {
-        Map<String, Object> result = new HashMap<>();
+    @Operation(summary ="获取所有作业信息")
+    public Result<List<Assignment>> getAllAssignments() {
         try {
             List<Assignment> assignments = assignmentService.getAllAssignments();
-            result.put("success", true);
-            result.put("data", assignments);
+
+            return Result.success(assignments);
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "获取作业列表失败：" + e.getMessage());
+            return Result.error("获取作业列表失败：" + e.getMessage());
         }
-        return result;
     }
     
     /**
@@ -110,17 +115,15 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/getUnassignedQuestions", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, Object> getUnassignedQuestions() {
-        Map<String, Object> result = new HashMap<>();
+    @Operation(summary ="获取未分配的试题列表")
+    public Result<List<Question>> getUnassignedQuestions() {
         try {
             List<Question> questions = questionMapper.getUnassignedQuestions();
-            result.put("success", true);
-            result.put("data", questions);
+
+            return Result.success(questions);
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "获取未分配试题失败：" + e.getMessage());
+            return Result.error("获取未分配试题失败：" + e.getMessage());
         }
-        return result;
     }
     
     /**
@@ -128,17 +131,14 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/getUnassignedQuestionsByOperator", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, Object> getUnassignedQuestionsByOperator(@RequestParam("operator") String operator) {
-        Map<String, Object> result = new HashMap<>();
+    @Operation(summary ="根据运算符类型获取未分配的试题")
+    public Result<List<Question>> getUnassignedQuestionsByOperator(@RequestParam("operator") String operator) {
         try {
             List<Question> questions = questionMapper.getUnassignedQuestionsByOperator(operator);
-            result.put("success", true);
-            result.put("data", questions);
+            return Result.success(questions);
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "获取未分配试题失败：" + e.getMessage());
+            return Result.error("获取未分配试题失败：" + e.getMessage());
         }
-        return result;
     }
     
     /**
@@ -146,8 +146,8 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/randomSelectQuestions", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> randomSelectQuestions(@RequestBody Map<String, Object> requestData) {
-        Map<String, Object> result = new HashMap<>();
+    @Operation(summary ="随机组卷")
+    public Result<List<Question>> randomSelectQuestions(@RequestBody Map<String, Object> requestData) {
         try {
             Integer count = Integer.parseInt(requestData.get("count").toString());
             String operator = (String) requestData.get("operator");
@@ -165,21 +165,19 @@ public class AssignmentController {
             for (int i = 0; i < Math.min(count, allQuestions.size()); i++) {
                 selectedQuestions.add(allQuestions.get(i));
             }
-            
-            result.put("success", true);
-            result.put("data", selectedQuestions);
-            result.put("message", "成功随机选择" + selectedQuestions.size() + "道试题");
+
+            return Result.success(selectedQuestions,"成功随机选择" + selectedQuestions.size() + "道试题");
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "随机组卷失败：" + e.getMessage());
+
+            return Result.error("随机组卷失败：" + e.getMessage());
         }
-        return result;
     }
     
     /**
      * 跳转到作业详情页面
      */
     @RequestMapping(value = "/detail/{id}", method = RequestMethod.GET)
+    @Operation(summary ="跳转到作业详情页面")
     public String toAssignmentDetail(@PathVariable("id") Integer id, Model model, HttpSession session) {
         // 检查登录状态
         Object teacher = session.getAttribute("teacher");
@@ -210,9 +208,10 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="添加作业")
     public Map<String, Object> addAssignment(@RequestBody Map<String, Object> requestData, HttpSession session) {
         Map<String, Object> result = new HashMap<>();
-        
+
         try {
             // 创建作业对象
             Assignment assignment = new Assignment();
@@ -328,6 +327,7 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/autoGrade/{id}", method = RequestMethod.POST)
     @ResponseBody
+    @Operation(summary ="自动批改作业")
     public Map<String, Object> autoGradeAssignment(@PathVariable("id") Integer id) {
         Map<String, Object> result = new HashMap<>();
         
@@ -400,35 +400,25 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/submission/detail/{id}", method = RequestMethod.GET)
     @ResponseBody
-    public Map<String, Object> getSubmissionDetail(@PathVariable("id") Integer submissionId) {
-        Map<String, Object> result = new HashMap<>();
-        
+    @Operation(summary ="获取学生提交详情")
+    public Result<SubmissionVO> getSubmissionDetail(@PathVariable("id") Integer submissionId) {
         try {
             // 获取提交记录
             Submission submission = submissionMapper.getSubmissionById(submissionId);
             if (submission == null) {
-                result.put("success", false);
-                result.put("message", "提交记录不存在");
-                return result;
+                return Result.error("提交记录不存在");
             }
             
             // 获取该作业的所有题目
             List<Question> questions = questionMapper.getQuestionsByAssignmentId(submission.getAssignmentId());
-            
-            // 构建详情数据
-            Map<String, Object> detail = new HashMap<>();
-            detail.put("submission", submission);
-            detail.put("questions", questions);
-            
-            result.put("success", true);
-            result.put("data", detail);
+
+            return Result.success(SubmissionVO.builder()
+                    .submission(submission)
+                    .questions(questions)
+                    .build());
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "获取提交详情失败：" + e.getMessage());
-            e.printStackTrace();
+            return Result.error("获取提交详情失败：" + e.getMessage());
         }
-        
-        return result;
     }
 
     /**
@@ -436,9 +426,8 @@ public class AssignmentController {
      */
     @RequestMapping(value = "/delete/{id}", method = RequestMethod.POST)
     @ResponseBody
-    public Map<String, Object> deleteAssignment(@PathVariable("id") Integer id) {
-        Map<String, Object> result = new HashMap<>();
-        
+    @Operation(summary ="删除作业")
+    public Result deleteAssignment(@PathVariable("id") Integer id) {
         try {
             // 重置该作业的所有题目为未分配状态（将assignment_id设为null）
             questionMapper.resetAssignmentId(id);
@@ -450,18 +439,13 @@ public class AssignmentController {
             boolean success = assignmentService.deleteAssignment(id);
             
             if (success) {
-                result.put("success", true);
-                result.put("message", "作业删除成功");
+                return Result.success("作业删除成功");
             } else {
-                result.put("success", false);
-                result.put("message", "作业删除失败");
+                return Result.error("作业删除失败");
             }
         } catch (Exception e) {
-            result.put("success", false);
-            result.put("message", "作业删除失败：" + e.getMessage());
+            return Result.error("作业删除失败"+ e.getMessage());
         }
-        
-        return result;
     }
 
 }

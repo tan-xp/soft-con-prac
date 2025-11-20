@@ -1,5 +1,6 @@
 package com.softcon.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -7,12 +8,27 @@ import lombok.Data;
  */
 @Data
 public class Submission {
-    private Integer id;         // 提交记录ID
-    private Integer assignmentId; // 作业ID
-    private Integer studentId;  // 学生ID
-    private String studentName; // 学生姓名
-    private String submissionTime; // 提交时间
-    private Integer score;      // 得分
-    private String status;      // 状态（已提交/未提交）
-    private String answers;     // 学生答案（JSON格式存储）
+    @Schema(description = "提交记录ID")
+    private Integer id;
+
+    @Schema(description = "作业ID")
+    private Integer assignmentId;
+
+    @Schema(description = "学生ID")
+    private Integer studentId;
+
+    @Schema(description = "学生姓名")
+    private String studentName;
+
+    @Schema(description = "提交时间")
+    private String submissionTime;
+
+    @Schema(description = "得分")
+    private Integer score;
+
+    @Schema(description = "状态（已提交/未提交）")
+    private String status;
+
+    @Schema(description = "学生答案（JSON格式存储）")
+    private String answers;
 }

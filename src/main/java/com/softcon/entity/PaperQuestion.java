@@ -1,5 +1,6 @@
 package com.softcon.entity;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 /**
@@ -7,8 +8,15 @@ import lombok.Data;
  */
 @Data
 public class PaperQuestion {
-    private Integer id;        // 主键ID
-    private Integer paperId;   // 试卷ID
-    private Integer questionId;// 题目ID
-    private Integer score;     // 该题分值（试卷内）
+    @Schema(description = "主键ID")
+    private Integer id;
+
+    @Schema(description = "试卷ID")
+    private Integer paperId;
+
+    @Schema(description = "题目ID")
+    private Integer questionId;
+
+    @Schema(description = "该题分值（试卷内）")
+    private Integer score;
 }
